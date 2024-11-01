@@ -19,18 +19,17 @@ export default {
       ],
       links: [
         {id: 1, label: "Link 1", type: "solid", sourceId: 1, targetId: 2},
-        {id: 2, label: "Link 2", type: "dashed", sourceId: 1, targetId: 3},
+        {id: 2, label: "Link 2", type: "solid", sourceId: 1, targetId: 3},
         {id: 3, label: "Link 3", type: "dotted", sourceId: 2, targetId: 4},
         {id: 4, label: "Link 4", type: "dotted", sourceId: 2, targetId: 3},
       ],
       nodeIcons: {
-        type1: {src: type1Icon, width: 400, height: 40},
-        type2: {src: type2Icon, width: 40, height: 40},
+        type1: {src: type1Icon, width: 40, height: 40},
+        type2: {src: type2Icon, width: 40, height: 20},
       },
       linkStyles: {
-        solid: { stroke: "#aaa", strokeWidth: 2, strokeDasharray: "0" },
-        dashed: { stroke: "#aaa", strokeWidth: 2, strokeDasharray: "5,5" },
-        dotted: { stroke: "#aaa", strokeWidth: 2, strokeDasharray: "2,2" },
+        solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
+        dotted: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "2,2" },
       },
     };
   },
@@ -108,34 +107,34 @@ export default {
           .data(this.nodes)
           .enter()
           .append("text")
-          .attr("x", (d) => d.x + 12)
-          .attr("y", (d) => d.y + 4)
+          .attr("x", (d) => d.x - this.nodeIcons[d.type].width / 2)
+          .attr("y", (d) => d.y + this.nodeIcons[d.type].height)
           .text((d) => d.label)
-          .attr("fill", "#333")
+          .attr("fill", (d) => d.type === "type1" ? "#000000" :"#0000ff")
           .attr("font-size", "12px");
 
 
-      // 添加连线标签
-      svg
-          .selectAll("text.link-label")
-          .data(this.links)
-          .enter()
-          .append("text")
-          .attr("class", "link-label")
-          .attr("x", (d) => {
-            const sourceNode = this.nodes.find((node) => node.id === d.sourceId);
-            const targetNode = this.nodes.find((node) => node.id === d.targetId);
-            return (sourceNode.x + targetNode.x) / 2;
-          })
-          .attr("y", (d) => {
-            const sourceNode = this.nodes.find((node) => node.id === d.sourceId);
-            const targetNode = this.nodes.find((node) => node.id === d.targetId);
-            return (sourceNode.y + targetNode.y) / 2;
-          })
-          .text((d) => d.label)
-          .attr("fill", "#666")
-          .attr("font-size", "10px")
-          .attr("text-anchor", "middle");
+      // // 添加连线标签
+      // svg
+      //     .selectAll("text.link-label")
+      //     .data(this.links)
+      //     .enter()
+      //     .append("text")
+      //     .attr("class", "link-label")
+      //     .attr("x", (d) => {
+      //       const sourceNode = this.nodes.find((node) => node.id === d.sourceId);
+      //       const targetNode = this.nodes.find((node) => node.id === d.targetId);
+      //       return (sourceNode.x + targetNode.x) / 2;
+      //     })
+      //     .attr("y", (d) => {
+      //       const sourceNode = this.nodes.find((node) => node.id === d.sourceId);
+      //       const targetNode = this.nodes.find((node) => node.id === d.targetId);
+      //       return (sourceNode.y + targetNode.y) / 2;
+      //     })
+      //     .text((d) => d.label)
+      //     .attr("fill", "#666")
+      //     .attr("font-size", "10px")
+      //     .attr("text-anchor", "middle");
     },
   },
 };
