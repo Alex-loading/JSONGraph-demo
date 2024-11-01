@@ -45,6 +45,19 @@ export default {
           .attr("width", 500)
           .attr("height", 500);
 
+      // 创建一个 tooltip 元素，初始隐藏
+      const tooltip = d3
+          .select(this.$refs.graphContainer)
+          .append("div")
+          .style("position", "absolute")
+          .style("background-color", "#fff")
+          .style("border", "1px solid #ccc")
+          .style("padding", "5px")
+          .style("border-radius", "5px")
+          .style("visibility", "hidden")
+          .style("font-size", "12px")
+          .style("color", "#333");
+
       // 绘制连线
       svg
           .selectAll("line")
@@ -69,7 +82,25 @@ export default {
           .attr("x", (d) => d.x - this.nodeIcons[d.type].width / 2) // 调整图标位置使其居中
           .attr("y", (d) => d.y - this.nodeIcons[d.type].height / 2)
           .attr("width", (d) => this.nodeIcons[d.type].width)
-          .attr("height", (d) => this.nodeIcons[d.type].height);
+          .attr("height", (d) => this.nodeIcons[d.type].height)
+          .on("mouseover", (event, d) => {
+            // 当鼠标悬浮在节点上时，显示 tooltip
+            tooltip
+                .html(`ID: ${d.id}<br>Label: ${d.label}`)
+                .style("left", `${event.pageX + 10}px`)
+                .style("top", `${event.pageY + 10}px`)
+                .style("visibility", "visible");
+          })
+          .on("mousemove", (event) => {
+            // 当鼠标移动时，更新 tooltip 位置
+            tooltip
+                .style("left", `${event.pageX + 10}px`)
+                .style("top", `${event.pageY + 10}px`);
+          })
+          .on("mouseout", () => {
+            // 当鼠标离开节点时，隐藏 tooltip
+            tooltip.style("visibility", "hidden");
+          });
 
       // 添加节点标签
       svg
