@@ -6,26 +6,33 @@
 import * as d3 from "d3";
 import type1Icon from "../components/icons/type1.svg"
 import type2Icon from "../components/icons/type2.svg"
+import type3Icon from "../components/icons/type3.svg"
+import type4Icon from "../components/icons/type4.svg"
 
 export default {
   name: "RelationGraph",
   data() {
     return {
       nodes: [
-        {id: 1, label: "Node A", type: "type1", x: 100, y: 150},
-        {id: 2, label: "Node B", type: "type2", x: 300, y: 250},
-        {id: 3, label: "Node C", type: "type1", x: 200, y: 400},
-        {id: 4, label: "Node D", type: "type2", x: 400, y: 350},
+        {id: 1, label: "Node A", type: "type1", x: 50, y: 150},
+        {id: 2, label: "Node B", type: "type2", x: 150, y: 150},
+        {id: 3, label: "Node C", type: "type3", x: 250, y: 150},
+        {id: 4, label: "Node D", type: "type2", x: 250, y: 250},
+        {id: 5, label: "Node E", type: "type3", x: 350, y: 150},
+        {id: 6, label: "Node F", type: "type4", x: 250, y: 350},
       ],
       links: [
-        {id: 1, label: "Link 1", type: "solid", sourceId: 1, targetId: 2},
-        {id: 2, label: "Link 2", type: "solid", sourceId: 1, targetId: 3},
-        {id: 3, label: "Link 3", type: "dotted", sourceId: 2, targetId: 4},
-        {id: 4, label: "Link 4", type: "dotted", sourceId: 2, targetId: 3},
+        {id: 1, label: "Link 1", type: "dotted", sourceId: 1, targetId: 2},
+        {id: 3, label: "Link 2", type: "dotted", sourceId: 3, targetId: 4},
+        {id: 4, label: "Link 3", type: "solid", sourceId: 2, targetId: 3},
+        {id: 5, label: "Link 4", type: "solid", sourceId: 3, targetId: 5},
+        {id: 6, label: "Link 4", type: "solid", sourceId: 4, targetId: 6},
       ],
       nodeIcons: {
         type1: {src: type1Icon, width: 40, height: 40},
         type2: {src: type2Icon, width: 40, height: 20},
+        type3: {src: type3Icon, width: 20, height: 20},
+        type4: {src: type4Icon, width: 20, height: 20},
       },
       linkStyles: {
         solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
@@ -107,11 +114,12 @@ export default {
           .data(this.nodes)
           .enter()
           .append("text")
-          .attr("x", (d) => d.x - this.nodeIcons[d.type].width / 2)
+          .attr("x", (d) => d.x)
           .attr("y", (d) => d.y + this.nodeIcons[d.type].height)
           .text((d) => d.label)
-          .attr("fill", (d) => d.type === "type1" ? "#000000" :"#0000ff")
-          .attr("font-size", "12px");
+          .attr("fill", (d) => d.type === "type2" ? "#0000ff" :"#000000")
+          .attr("font-size", "12px")
+          .attr("text-anchor", "middle");
 
 
       // // 添加连线标签
