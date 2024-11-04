@@ -5,34 +5,45 @@
 <script>
 import * as d3 from "d3";
 import type1Icon from "../components/icons/type1.svg"
-import type2Icon from "../components/icons/type2.svg"
-import type3Icon from "../components/icons/type3.svg"
-import type4Icon from "../components/icons/type4.svg"
+// import ACLineSegment from "../components/icons/ACLineSegment.svg"
+// import Disconnector from "../components/icons/Disconnector.svg"
+import Load from "../components/icons/Load.svg"
+import Switch from "../components/icons/Switch.svg"
+// import ConnectivityNode from "../components/icons/ConnectivityNode.svg"
+import Breaker from "../components/icons/Breaker.svg"
+import BusbarSection from "../components/icons/BusbarSection.svg"
 
 export default {
   name: "RelationGraph",
   data() {
     return {
-      nodes: [
-        {id: 1, label: "Node A", type: "type1", x: 50, y: 150},
-        {id: 2, label: "Node B", type: "type2", x: 150, y: 150},
-        {id: 3, label: "Node C", type: "type3", x: 250, y: 150},
-        {id: 4, label: "Node D", type: "type2", x: 250, y: 250},
-        {id: 5, label: "Node E", type: "type3", x: 350, y: 150},
-        {id: 6, label: "Node F", type: "type4", x: 250, y: 350},
-      ],
-      links: [
-        {id: 1, label: "Link 1", type: "dotted", sourceId: 1, targetId: 2},
-        {id: 3, label: "Link 2", type: "dotted", sourceId: 3, targetId: 4},
-        {id: 4, label: "Link 3", type: "solid", sourceId: 2, targetId: 3},
-        {id: 5, label: "Link 4", type: "solid", sourceId: 3, targetId: 5},
-        {id: 6, label: "Link 4", type: "solid", sourceId: 4, targetId: 6},
-      ],
+      data: {
+        nodes: [
+          {id: 1, label: "Node A", type: "type1", x: 50, y: 150},
+          {id: 2, label: "Node B", type: "Switch", x: 150, y: 150},
+          {id: 3, label: "Node C", type: "Load", x: 250, y: 150},
+          {id: 4, label: "Node D", type: "Breaker", x: 250, y: 250},
+          {id: 5, label: "Node E", type: "Load", x: 350, y: 150},
+          {id: 6, label: "Node F", type: "BusbarSection", x: 250, y: 350},
+        ],
+        links: [
+          {id: 1, label: "Link 1", type: "dotted", sourceId: 1, targetId: 2},
+          {id: 3, label: "Link 2", type: "dotted", sourceId: 3, targetId: 4},
+          {id: 4, label: "Link 3", type: "solid", sourceId: 2, targetId: 3},
+          {id: 5, label: "Link 4", type: "solid", sourceId: 3, targetId: 5},
+          {id: 6, label: "Link 4", type: "solid", sourceId: 4, targetId: 6},
+        ],
+      },
       nodeIcons: {
         type1: {src: type1Icon, width: 40, height: 40},
-        type2: {src: type2Icon, width: 40, height: 20},
-        type3: {src: type3Icon, width: 20, height: 20},
-        type4: {src: type4Icon, width: 20, height: 20},
+        // ACLineSegment: {src: ACLineSegment, width: 40, height: 40},
+        // Disconnector: {src: Disconnector, width: 40, height: 40},
+        Load: {src: Load, width: 20, height: 20},
+        Switch: {src: Switch, width: 40, height: 20},
+        // ConnectivityNode: {src: ConnectivityNode, width: 40, height: 40},
+        Breaker: {src: Breaker, width: 40, height: 20},
+        BusbarSection: {src: BusbarSection, width: 20, height: 20},
+
       },
       linkStyles: {
         solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
@@ -67,13 +78,13 @@ export default {
       // 绘制连线
       svg
           .selectAll("line")
-          .data(this.links)
+          .data(this.data.links)
           .enter()
           .append("line")
-          .attr("x1", (d) => this.nodes.find((node) => node.id === d.sourceId).x)
-          .attr("y1", (d) => this.nodes.find((node) => node.id === d.sourceId).y)
-          .attr("x2", (d) => this.nodes.find((node) => node.id === d.targetId).x)
-          .attr("y2", (d) => this.nodes.find((node) => node.id === d.targetId).y)
+          .attr("x1", (d) => this.data.nodes.find((node) => node.id === d.sourceId).x)
+          .attr("y1", (d) => this.data.nodes.find((node) => node.id === d.sourceId).y)
+          .attr("x2", (d) => this.data.nodes.find((node) => node.id === d.targetId).x)
+          .attr("y2", (d) => this.data.nodes.find((node) => node.id === d.targetId).y)
           .attr("stroke", (d) => this.linkStyles[d.type].stroke)
           .attr("stroke-width", (d) => this.linkStyles[d.type].strokeWidth)
           .attr("stroke-dasharray", (d) => this.linkStyles[d.type].strokeDasharray);
@@ -81,7 +92,7 @@ export default {
       // 绘制节点图标
       svg
           .selectAll("image")
-          .data(this.nodes)
+          .data(this.data.nodes)
           .enter()
           .append("image")
           .attr("xlink:href", (d) => this.nodeIcons[d.type].src) // 根据节点type选择图标
@@ -111,7 +122,7 @@ export default {
       // 添加节点标签
       svg
           .selectAll("text")
-          .data(this.nodes)
+          .data(this.data.nodes)
           .enter()
           .append("text")
           .attr("x", (d) => d.x)
