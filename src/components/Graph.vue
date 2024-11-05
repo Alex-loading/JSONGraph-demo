@@ -1,6 +1,11 @@
 <template>
-  <button @click="createGraph">Create Graph</button>
-  <div ref="graphContainer" class="graph-container"></div>
+  <div class="wrapper">
+    <div class="search-container">
+      <input class="input" v-model="searchId" placeholder="请输入查询id" >
+      <button class="search" @click="refreshGraph">查询</button>
+    </div>
+    <div ref="graphContainer" class="graph-container" :key="searchCount"></div>
+  </div>
 </template>
 
 <script>
@@ -19,7 +24,10 @@ export default {
   name: "RelationGraph",
   data() {
     return {
-      data: {},
+      data: {
+        nodes: [],
+        edges: []
+      },
       nodeIcons: {
         type1: {src: type1Icon, width: 40, height: 40},
         ACLineSegment: {src: ACLineSegment, width: 40, height: 40},
@@ -36,12 +44,17 @@ export default {
         dotted: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "2,2" },
         ConnectivityEdge: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0"}
       },
+      searchCount: 0,
+      searchId: "",
     };
   },
-
   methods: {
+    refreshGraph() {
+      this.searchCount += 1;
+      this.createGraph();
+    },
     createGraph() {
-      getGraphData("111").then(res => {
+      getGraphData(this.searchId).then(res => {
         console.log(res)
         this.data = res.data.data
         console.log("data", this.data)
@@ -111,39 +124,21 @@ export default {
 
         // 添加节点标签
         svg
-            .selectAll("text")
+            .selectAll("foreignObject")
             .data(this.data.nodes)
             .enter()
-            .append("text")
-            .attr("x", (d) => d.x)
-            .attr("y", (d) => d.y + this.nodeIcons[d.type].height)
-            .text((d) => d.label)
-            .attr("fill", (d) => d.type === "type2" ? "#0000ff" :"#000000")
-            .attr("font-size", "12px")
-            .attr("text-anchor", "middle");
-
-
-        // // 添加连线标签
-        // svg
-        //     .selectAll("text.link-label")
-        //     .data(this.links)
-        //     .enter()
-        //     .append("text")
-        //     .attr("class", "link-label")
-        //     .attr("x", (d) => {
-        //       const sourceNode = this.nodes.find((node) => node.id === d.sourceId);
-        //       const targetNode = this.nodes.find((node) => node.id === d.targetId);
-        //       return (sourceNode.x + targetNode.x) / 2;
-        //     })
-        //     .attr("y", (d) => {
-        //       const sourceNode = this.nodes.find((node) => node.id === d.sourceId);
-        //       const targetNode = this.nodes.find((node) => node.id === d.targetId);
-        //       return (sourceNode.y + targetNode.y) / 2;
-        //     })
-        //     .text((d) => d.label)
-        //     .attr("fill", "#666")
-        //     .attr("font-size", "10px")
-        //     .attr("text-anchor", "middle");
+            .append("foreignObject")
+            .attr("x", (d) => d.x - 30) // 偏移，使文本居中
+            .attr("y", (d) => d.y + this.nodeIcons[d.type].height / 2)
+            .attr("width", 60)
+            .attr("height", 120)
+            .append("xhtml:div")
+            .style("color", (d) => d.type === "Switch" ? "#0000ff" : "#000000")
+            .style("font-size", "8px")
+            .style("text-align", "center")
+            .style("word-wrap", "break-word")
+            .style("overflow-wrap", "break-word")
+            .text((d) => d.label);
       })
     },
   },
@@ -151,8 +146,29 @@ export default {
 </script>
 
 <style scoped>
-.graph-container {
+.wrapper {
+  width: 100%;
+  height: 100vh;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  .input{
+    width: 160px;
+    margin-right: 10px;
+    height: 30px;
+  }
+  .search{
+    height: 30px;
+  }
+}
+.graph-container {
+  flex: 1;
   justify-content: center;
   align-items: center;
   margin-top: 20px;
