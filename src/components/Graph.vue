@@ -40,7 +40,7 @@ export default {
       },
       linkStyles: {
         solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
-        dotted: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "2,2" },
+        dashed: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "2,2" },
         ConnectivityEdge: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0"}
       },
       searchCount: 0,
@@ -102,9 +102,9 @@ export default {
             .attr("y1", (d) => this.data.nodes.find((node) => node.id === d.sourceId).y)
             .attr("x2", (d) => this.data.nodes.find((node) => node.id === d.targetId).x)
             .attr("y2", (d) => this.data.nodes.find((node) => node.id === d.targetId).y)
-            .attr("stroke", (d) => this.linkStyles[d.type].stroke)
-            .attr("stroke-width", (d) => this.linkStyles[d.type].strokeWidth)
-            .attr("stroke-dasharray", (d) => this.linkStyles[d.type].strokeDasharray);
+            .attr("stroke", (d) => this.linkStyles[d.type] ? this.linkStyles[d.type].stroke :　this.linkStyles.solid.stroke)
+            .attr("stroke-width", (d) => this.linkStyles[d.type] ?　this.linkStyles[d.type].strokeWidth: this.linkStyles.solid.strokeWidth)
+            .attr("stroke-dasharray", (d) => this.linkStyles[d.type] ? this.linkStyles[d.type].strokeDasharray : this.linkStyles.solid.strokeDasharray);
 
         // 绘制节点图标
         svg
