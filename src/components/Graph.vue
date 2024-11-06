@@ -36,8 +36,7 @@ export default {
         Switch: {src: Switch, width: 40, height: 20},
         ConnectivityNode: {src: ConnectivityNode, width: 40, height: 40},
         Breaker: {src: Breaker, width: 40, height: 20},
-        BusbarSection: {src: BusbarSection, width: 20, height: 20},
-
+        BusbarSection: {src: BusbarSection, width: 40, height: 20},
       },
       linkStyles: {
         solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
@@ -62,8 +61,23 @@ export default {
         const svg = d3
             .select(this.$refs.graphContainer)
             .append("svg")
-            .attr("width", 500)
-            .attr("height", 500);
+            .attr("width", 2000)
+            .attr("height", 2000)
+            .style("transform-origin", "0 0");
+
+        // 初始化缩放行为
+        svg
+            .call(
+                d3
+                    .zoom()
+                    .scaleExtent([0.8, 3])
+                    .on("zoom", (e) => {
+                      svg.attr("transform", () => {
+                        return `translate(${e.transform.x},${e.transform.y}) scale(${e.transform.k})`;
+                      });
+                    })
+            )
+            .on("dblclick.zoom", null);
 
         // 创建一个 tooltip 元素，初始隐藏
         const tooltip = d3
@@ -98,11 +112,14 @@ export default {
             .data(this.data.nodes)
             .enter()
             .append("image")
-            .attr("xlink:href", (d) => this.nodeIcons[d.type].src) // 根据节点type选择图标
-            .attr("x", (d) => d.x - this.nodeIcons[d.type].width / 2) // 调整图标位置使其居中
-            .attr("y", (d) => d.y - this.nodeIcons[d.type].height / 2)
-            .attr("width", (d) => this.nodeIcons[d.type].width)
-            .attr("height", (d) => this.nodeIcons[d.type].height)
+            // .attr("xlink:href", (d) => this.nodeIcons[d.type].src) // 根据节点type选择图标
+            // .attr("width", (d) => this.nodeIcons[d.type].width)
+            // .attr("height", (d) => this.nodeIcons[d.type].height)
+            .attr("xlink:href", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].src : this.nodeIcons.type1.src))
+            .attr("width", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].width : this.nodeIcons.type1.width))
+            .attr("height", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].height : this.nodeIcons.type1.height))
+            .attr("x", (d) => d.x - (this.nodeIcons[d.type] ? this.nodeIcons[d.type].width : this.nodeIcons.type1.width) / 2) // 调整图标位置使其居中
+            .attr("y", (d) => d.y - ((this.nodeIcons[d.type] ? this.nodeIcons[d.type].height : this.nodeIcons.type1.height)) / 2)
             .on("mouseover", (event, d) => {
               // 当鼠标悬浮在节点上时，显示 tooltip
               tooltip
@@ -129,7 +146,7 @@ export default {
             .enter()
             .append("foreignObject")
             .attr("x", (d) => d.x - 30) // 偏移，使文本居中
-            .attr("y", (d) => d.y + this.nodeIcons[d.type].height / 2)
+            .attr("y", (d) => d.y + ((this.nodeIcons[d.type] ? this.nodeIcons[d.type].height : this.nodeIcons.type1.height)) / 2)
             .attr("width", 60)
             .attr("height", 120)
             .append("xhtml:div")
@@ -168,9 +185,12 @@ export default {
   }
 }
 .graph-container {
-  flex: 1;
+  height: 800px;
+  width: 80%;
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+  border: #282828 solid 1px;
+  overflow: hidden; /* 隐藏溢出内容 */
 }
 </style>
