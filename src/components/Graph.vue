@@ -19,7 +19,6 @@ import ConnectivityNode from "../components/icons/ConnectivityNode.svg"
 import Breaker from "../components/icons/Breaker.svg"
 import BusbarSection from "../components/icons/BusbarSection.svg"
 import {getGraphData} from "@/api/graph.ts";
-
 export default {
   name: "RelationGraph",
   data() {
@@ -65,7 +64,7 @@ export default {
             .attr("height", "100%")
             .style("transform-origin", "0 0");
 
-        // 初始化缩放行为
+        // 初始化缩放行为，在g元素上操作，支持缩放和拖拽
         const g = svg.append("g");
         svg.call(
             d3.zoom()
@@ -103,39 +102,9 @@ export default {
             .attr("stroke-width", (d) => this.linkStyles[d.type] ?　this.linkStyles[d.type].strokeWidth: this.linkStyles.solid.strokeWidth)
             .attr("stroke-dasharray", (d) => this.linkStyles[d.type] ? this.linkStyles[d.type].strokeDasharray : this.linkStyles.solid.strokeDasharray);
 
-        // 绘制节点图标
-        g
-            .selectAll("image")
-            .data(this.data.nodes)
-            .enter()
-            .append("image")
-            .attr("xlink:href", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].src : this.nodeIcons.type1.src))
-            .attr("width", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].width : this.nodeIcons.type1.width))
-            .attr("height", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].height : this.nodeIcons.type1.height))
-            .attr("x", (d) => d.x - (this.nodeIcons[d.type] ? this.nodeIcons[d.type].width : this.nodeIcons.type1.width) / 2) // 调整图标位置使其居中
-            .attr("y", (d) => d.y - ((this.nodeIcons[d.type] ? this.nodeIcons[d.type].height : this.nodeIcons.type1.height)) / 2)
-            .on("mouseover", (event, d) => {
-              // 当鼠标悬浮在节点上时，显示 tooltip
-              tooltip
-                  .html(`ID: ${d.id}<br>Label: ${d.label}`)
-                  .style("left", `${event.pageX + 10}px`)
-                  .style("top", `${event.pageY + 10}px`)
-                  .style("visibility", "visible");
-            })
-            .on("mousemove", (event) => {
-              // 当鼠标移动时，更新 tooltip 位置
-              tooltip
-                  .style("left", `${event.pageX + 10}px`)
-                  .style("top", `${event.pageY + 10}px`);
-            })
-            .on("mouseout", () => {
-              // 当鼠标离开节点时，隐藏 tooltip
-              tooltip.style("visibility", "hidden");
-            });
-
         // 添加节点标签
         g
-            .selectAll("foreignObject")
+            .selectAll("foreignObject") // 使用 foreignObject 包裹文本，使其支持换行和换页
             .data(this.data.nodes)
             .enter()
             .append("foreignObject")
@@ -144,12 +113,45 @@ export default {
             .attr("width", 60)
             .attr("height", 120)
             .append("xhtml:div")
-            .style("color", (d) => d.type === "Switch" ? "#0000ff" : "#000000")
+            .style("color", (d) => d.type === "Switch" ? "#0000ff" : "#000000") // 根据节点类型设置颜色，这里以Switch为例
             .style("font-size", "8px")
             .style("text-align", "center")
             .style("word-wrap", "break-word")
             .style("overflow-wrap", "break-word")
             .text((d) => d.label);
+
+        // 绘制节点图标
+        g
+            .selectAll("image")
+            .data(this.data.nodes)
+            .enter()
+            .append("image")
+            // TODO： 判断节点内容是否被定义，如果没有使用默认图标，后续待完善
+            .attr("xlink:href", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].src : this.nodeIcons.type1.src))
+            .attr("width", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].width : this.nodeIcons.type1.width))
+            .attr("height", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].height : this.nodeIcons.type1.height))
+            .attr("x", (d) => d.x - (this.nodeIcons[d.type] ? this.nodeIcons[d.type].width : this.nodeIcons.type1.width) / 2)
+            .attr("y", (d) => d.y - ((this.nodeIcons[d.type] ? this.nodeIcons[d.type].height : this.nodeIcons.type1.height)) / 2)
+            .on("mouseover", (event, d) => { // 当鼠标悬浮在节点上时，显示 tooltip
+              tooltip
+                  .html(`ID: ${d.id}<br>Label: ${d.label}`)
+                  .style("left", `${event.pageX + 10}px`)
+                  .style("top", `${event.pageY + 10}px`)
+                  .style("visibility", "visible");
+            })
+            .on("mousemove", (event) => { // 当鼠标移动时，更新 tooltip 位置
+              tooltip
+                  .style("left", `${event.pageX + 10}px`)
+                  .style("top", `${event.pageY + 10}px`);
+            })
+            .on("mouseout", () => { // 当鼠标离开节点时，隐藏 tooltip
+              tooltip.style("visibility", "hidden");
+            })
+            .on("click", function() { // 图标点击事件（用于后续节点开闭的svg切换）
+              console.log("click")
+              console.log(this)
+              d3.select(this).attr("xlink:href", type1Icon); // 切换图标。type1Icon对应需要切换为的图标，可根据需求修改
+            })
       })
     },
   },
