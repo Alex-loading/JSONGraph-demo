@@ -61,22 +61,19 @@ export default {
         const svg = d3
             .select(this.$refs.graphContainer)
             .append("svg")
-            .attr("width", 2000)
-            .attr("height", 2000)
+            .attr("width", "100%")
+            .attr("height", "100%")
             .style("transform-origin", "0 0");
 
         // 初始化缩放行为
-        svg
-            .call(
-                d3
-                    .zoom()
-                    .scaleExtent([0.8, 3])
-                    .on("zoom", (e) => {
-                      svg.attr("transform", () => {
-                        return `translate(${e.transform.x},${e.transform.y}) scale(${e.transform.k})`;
-                      });
-                    })
-            )
+        const g = svg.append("g");
+        svg.call(
+            d3.zoom()
+                .scaleExtent([0.5, 5])
+                .on("zoom", (e) => {
+                  g.attr("transform", `translate(${e.transform.x},${e.transform.y}) scale(${e.transform.k})`);
+                })
+        )
             .on("dblclick.zoom", null);
 
         // 创建一个 tooltip 元素，初始隐藏
@@ -93,7 +90,7 @@ export default {
             .style("color", "#333");
 
         // 绘制连线
-        svg
+        g
             .selectAll("line")
             .data(this.data.edges)
             .enter()
@@ -107,14 +104,11 @@ export default {
             .attr("stroke-dasharray", (d) => this.linkStyles[d.type] ? this.linkStyles[d.type].strokeDasharray : this.linkStyles.solid.strokeDasharray);
 
         // 绘制节点图标
-        svg
+        g
             .selectAll("image")
             .data(this.data.nodes)
             .enter()
             .append("image")
-            // .attr("xlink:href", (d) => this.nodeIcons[d.type].src) // 根据节点type选择图标
-            // .attr("width", (d) => this.nodeIcons[d.type].width)
-            // .attr("height", (d) => this.nodeIcons[d.type].height)
             .attr("xlink:href", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].src : this.nodeIcons.type1.src))
             .attr("width", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].width : this.nodeIcons.type1.width))
             .attr("height", (d) => (this.nodeIcons[d.type] ? this.nodeIcons[d.type].height : this.nodeIcons.type1.height))
@@ -140,7 +134,7 @@ export default {
             });
 
         // 添加节点标签
-        svg
+        g
             .selectAll("foreignObject")
             .data(this.data.nodes)
             .enter()
