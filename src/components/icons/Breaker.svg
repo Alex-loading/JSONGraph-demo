@@ -1,4 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="20" viewBox="-20 -10 40 20">
-    <path opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" d="M -20 -10 h 40 v 20 h -40 Z" stroke="#666" fill="#0000FF"/>
+    <path opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" d="M -20 -10 h 40 v 20 h -40 Z" stroke="#666" fill="#FF6600"/>
     <text x="0" y="0" text-anchor="middle" dy="0.35em" font-size="10" fill="#fff">Breaker</text>
 </svg>
