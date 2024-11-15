@@ -131,7 +131,7 @@ export default {
             const y2 = targetNode.y;
 
             // 计算中间点的坐标，先水平后垂直（或先垂直后水平）
-            const midX = x1; // 中间点的 x 坐标，与 x1 对齐
+            const midX = (x1 + x2) / 2; // 中间点的 x 坐标，与 x1 对齐
             const midY = y2; // 中间点的 y 坐标，与 y2 对齐
 
             return `M ${x1},${y1} H ${midX} V ${midY} H ${x2}`;
