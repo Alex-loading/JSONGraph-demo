@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="-20 -20 40 40">
-    <circle opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" cx="0" cy="0" r="18"
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+    <circle opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" cx="10" cy="10" r="9"
         stroke="red" fill="#fff" />
-    <text x="0" y="0" text-anchor="middle" dy="0.35em" font-size="30" fill="#000">J</text>
+    <text x="10" y="10" text-anchor="middle" dy="0.35em" font-size="10" fill="#000">J</text>
 </svg>

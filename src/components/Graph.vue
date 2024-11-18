@@ -18,6 +18,7 @@ import Switch from "../components/icons/Switch.svg";
 import ConnectivityNode from "../components/icons/ConnectivityNode.svg";
 import Breaker from "../components/icons/Breaker.svg";
 import BusbarSection from "../components/icons/BusbarSection.svg";
+import PowerTransformer from "../components/icons/PowerTransformer.svg";
 import { getGraphData } from "@/api/graph.ts";
 export default {
   name: "RelationGraph",
@@ -29,13 +30,14 @@ export default {
       },
       nodeIcons: {
         type1: { src: type1Icon, width: 40, height: 40 },
-        ACLineSegment: { src: ACLineSegment, width: 40, height: 40 },
-        Disconnector: { src: Disconnector, width: 40, height: 40 },
-        Load: { src: Load, width:20, height: 20 },
+        ACLineSegment: { src: ACLineSegment, width: 20, height: 20 },
+        Disconnector: { src: Disconnector, width: 20, height: 20 },
+        Load: { src: Load, width: 20, height: 20 },
         Switch: { src: Switch, width: 40, height: 20 },
-        ConnectivityNode: { src: ConnectivityNode, width: 40, height: 40 },
+        ConnectivityNode: { src: ConnectivityNode, width: 20, height: 20 },
         Breaker: { src: Breaker, width: 40, height: 20 },
-        BusbarSection: { src: BusbarSection, width: 40, height: 20 },
+        BusbarSection: { src: BusbarSection, width: 20, height: 20 },
+        PowerTransformer: { src: PowerTransformer, width: 40, height: 20 },
       },
       linkStyles: {
         solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
@@ -97,25 +99,11 @@ export default {
           .style("font-size", "12px")
           .style("color", "#333");
 
-        // // 绘制连线
-        // g
-        //     .selectAll("line")
-        //     .data(this.data.edges)
-        //     .enter()
-        //     .append("line")
-        //     .attr("x1", (d) => this.data.nodes.find((node) => node.id === d.sourceId).x)
-        //     .attr("y1", (d) => this.data.nodes.find((node) => node.id === d.sourceId).y)
-        //     .attr("x2", (d) => this.data.nodes.find((node) => node.id === d.targetId).x)
-        //     .attr("y2", (d) => this.data.nodes.find((node) => node.id === d.targetId).y)
-        //     .attr("stroke", (d) => this.linkStyles[d.type] ? this.linkStyles[d.type].stroke :　this.linkStyles.solid.stroke)
-        //     .attr("stroke-width", (d) => this.linkStyles[d.type] ?　this.linkStyles[d.type].strokeWidth: this.linkStyles.solid.strokeWidth)
-        //     .attr("stroke-dasharray", (d) => this.linkStyles[d.type] ? this.linkStyles[d.type].strokeDasharray : this.linkStyles.solid.strokeDasharray);
-
-
-        // 绘制连线（水平垂直版）
-        g.selectAll("path")
+        // 绘制连线
+        g.selectAll("line")
           .data(this.data.edges)
           .enter()
+<<<<<<< Updated upstream
           .append("path")
           .attr("d", (d) => {
             const sourceNode = this.data.nodes.find(
@@ -136,6 +124,25 @@ export default {
 
             return `M ${x1},${y1} H ${midX} V ${midY} H ${x2}`;
           })
+=======
+          .append("line")
+          .attr(
+            "x1",
+            (d) => this.data.nodes.find((node) => node.id === d.sourceId).x
+          )
+          .attr(
+            "y1",
+            (d) => this.data.nodes.find((node) => node.id === d.sourceId).y
+          )
+          .attr(
+            "x2",
+            (d) => this.data.nodes.find((node) => node.id === d.targetId).x
+          )
+          .attr(
+            "y2",
+            (d) => this.data.nodes.find((node) => node.id === d.targetId).y
+          )
+>>>>>>> Stashed changes
           .attr("stroke", (d) =>
             this.linkStyles[d.type]
               ? this.linkStyles[d.type].stroke
@@ -146,12 +153,59 @@ export default {
               ? this.linkStyles[d.type].strokeWidth
               : this.linkStyles.solid.strokeWidth
           )
-          .attr("fill", "none")
           .attr("stroke-dasharray", (d) =>
             this.linkStyles[d.type]
               ? this.linkStyles[d.type].strokeDasharray
               : this.linkStyles.solid.strokeDasharray
           );
+
+        // 绘制连线电流（不去重 只考虑起始节点）
+        g.selectAll("circle.start")
+          .data(this.data.edges)
+          .enter()
+          .append("circle")
+          .attr("class", "start")
+          .attr("cx", (d) => {
+            const sourceNode = this.data.nodes.find(
+              (node) => node.id === d.sourceId
+            );
+            const targetNode = this.data.nodes.find(
+              (node) => node.id === d.targetId
+            );
+
+            // TODO: 判断方向取长还是宽
+
+            return this.getPointOnLine(
+              sourceNode.x,
+              sourceNode.y,
+              targetNode.x,
+              targetNode.y,
+              this.nodeIcons[sourceNode.type]
+                ? this.nodeIcons[sourceNode.type].width / 2 + 3
+                : this.nodeIcons.type1.width / 2 + 3
+            ).x;
+          })
+          .attr("cy", (d) => {
+            const sourceNode = this.data.nodes.find(
+              (node) => node.id === d.sourceId
+            );
+            const targetNode = this.data.nodes.find(
+              (node) => node.id === d.targetId
+            );
+
+            return this.getPointOnLine(
+              sourceNode.x,
+              sourceNode.y,
+              targetNode.x,
+              targetNode.y,
+              this.nodeIcons[sourceNode.type]
+                ? this.nodeIcons[sourceNode.type].width / 2 + 3
+                : this.nodeIcons.type1.width / 2 + 3
+            ).y;
+          })
+          .attr("r", 2.7)
+          .attr("stroke", "blue")
+          .attr("fill", "none");
 
         // 添加节点标签
         g.selectAll("foreignObject") // 使用 foreignObject 包裹文本，使其支持换行和换页
@@ -242,6 +296,15 @@ export default {
             d3.select(this).attr("xlink:href", type1Icon); // 切换图标。type1Icon对应需要切换为的图标，可根据需求修改
           });
       });
+    },
+    // 计算连线上的点（未考虑方向）
+    getPointOnLine(x1, y1, x2, y2, w) {
+      const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+      if (length === 0) {
+        return { x: x1, y: y1 };
+      }
+      const t = w / length;
+      return { x: x1 + t * (x2 - x1), y: y1 + t * (y2 - y1) };
     },
   },
 };

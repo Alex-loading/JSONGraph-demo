@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="-20 -20 40 40">
-    <circle opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" cx="0" cy="0" r="20"
+    <circle opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" cx="0" cy="0" r="19"
         stroke="red" fill="red" />
-    <text x="0" y="0" text-anchor="middle" dy="0.35em" font-size="6" fill="#fff">BusbarSection</text>
+    <text x="0" y="0" text-anchor="middle" dy="0.35em" font-size="7" fill="black">BusbarSection</text>
 </svg>
