@@ -103,28 +103,6 @@ export default {
         g.selectAll("line")
           .data(this.data.edges)
           .enter()
-<<<<<<< Updated upstream
-          .append("path")
-          .attr("d", (d) => {
-            const sourceNode = this.data.nodes.find(
-              (node) => node.id === d.sourceId
-            );
-            const targetNode = this.data.nodes.find(
-              (node) => node.id === d.targetId
-            );
-
-            const x1 = sourceNode.x;
-            const y1 = sourceNode.y;
-            const x2 = targetNode.x;
-            const y2 = targetNode.y;
-
-            // 计算中间点的坐标，先水平后垂直（或先垂直后水平）
-            const midX = (x1 + x2) / 2; // 中间点的 x 坐标，与 x1 对齐
-            const midY = y2; // 中间点的 y 坐标，与 y2 对齐
-
-            return `M ${x1},${y1} H ${midX} V ${midY} H ${x2}`;
-          })
-=======
           .append("line")
           .attr(
             "x1",
@@ -142,7 +120,6 @@ export default {
             "y2",
             (d) => this.data.nodes.find((node) => node.id === d.targetId).y
           )
->>>>>>> Stashed changes
           .attr("stroke", (d) =>
             this.linkStyles[d.type]
               ? this.linkStyles[d.type].stroke
