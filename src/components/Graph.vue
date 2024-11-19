@@ -124,6 +124,31 @@ export default {
           .style("font-size", "12px")
           .style("color", "#333");
 
+        // 添加节点标签
+        g.selectAll("foreignObject") // 使用 foreignObject 包裹文本，使其支持换行和换页
+          .data(this.data.nodes)
+          .enter()
+          .append("foreignObject")
+          .attr("x", (d) => d.x - 30) // 偏移，使文本居中
+          .attr(
+            "y",
+            (d) =>
+              d.y +
+              (this.nodeIcons[d.type]
+                ? this.nodeIcons[d.type].height
+                : this.nodeIcons.type1.height) /
+                2
+          )
+          .attr("width", 60)
+          .attr("height", 120)
+          .append("xhtml:div")
+          .style("color", (d) => (d.type === "Switch" ? "#0000ff" : "#000000")) // 根据节点类型设置颜色，这里以Switch为例
+          .style("font-size", "8px")
+          .style("text-align", "center")
+          .style("word-wrap", "break-word")
+          .style("overflow-wrap", "break-word")
+          .text((d) => d.label);
+
         // 绘制连线
         g.selectAll("line")
           .data(this.data.edges)
@@ -143,20 +168,42 @@ export default {
             (d) => this.data.nodes.find((node) => node.id == d.targetId).y
           )
           .attr("stroke", (d) =>
-            this.linkStyles[d.type]
-              ? this.linkStyles[d.type].stroke
+            this.linkStyles[d.style]
+              ? this.linkStyles[d.style].stroke
               : this.linkStyles.solid.stroke
           )
           .attr("stroke-width", (d) =>
-            this.linkStyles[d.type]
-              ? this.linkStyles[d.type].strokeWidth
+            this.linkStyles[d.style]
+              ? this.linkStyles[d.style].strokeWidth
               : this.linkStyles.solid.strokeWidth
           )
           .attr("stroke-dasharray", (d) =>
-            this.linkStyles[d.type]
-              ? this.linkStyles[d.type].strokeDasharray
+            this.linkStyles[d.style]
+              ? this.linkStyles[d.style].strokeDasharray
               : this.linkStyles.solid.strokeDasharray
-          );
+          )
+          .on("mouseover", (event, d) => {
+            console.log("line: mouseover")
+            console.log(d.type)
+            if (d.type === "ACL") {
+              console.log("is an ACL")
+              tooltip
+                  .html(`ACL<br>ID: ${d.id}<br>Label: ${d.label}`)
+                  .style("left", `${event.pageX + 10}px`)
+                  .style("top", `${event.pageY + 10}px`)
+                  .style("visibility", "visible");
+            }
+          })
+          .on("mousemove", (event, d) => {
+            if (d.type === "ACL") {
+              tooltip
+                  .style("left", `${event.pageX + 10}px`)
+                  .style("top", `${event.pageY + 10}px`);
+            }
+          })
+          .on("mouseout", () => {
+            tooltip.style("visibility", "hidden");
+          });
 
         // 绘制连线电流（不去重 只考虑起始节点）
         g.selectAll("circle.start")
@@ -185,31 +232,6 @@ export default {
           .attr("r", 2.5)
           .attr("stroke", "blue")
           .attr("fill", "none");
-
-        // 添加节点标签
-        g.selectAll("foreignObject") // 使用 foreignObject 包裹文本，使其支持换行和换页
-          .data(this.data.nodes)
-          .enter()
-          .append("foreignObject")
-          .attr("x", (d) => d.x - 30) // 偏移，使文本居中
-          .attr(
-            "y",
-            (d) =>
-              d.y +
-              (this.nodeIcons[d.type]
-                ? this.nodeIcons[d.type].height
-                : this.nodeIcons.type1.height) /
-                2
-          )
-          .attr("width", 60)
-          .attr("height", 120)
-          .append("xhtml:div")
-          .style("color", (d) => (d.type === "Switch" ? "#0000ff" : "#000000")) // 根据节点类型设置颜色，这里以Switch为例
-          .style("font-size", "8px")
-          .style("text-align", "center")
-          .style("word-wrap", "break-word")
-          .style("overflow-wrap", "break-word")
-          .text((d) => d.label);
 
         // 绘制节点图标
         g.selectAll("image")
@@ -274,12 +296,12 @@ export default {
             // 当鼠标离开节点时，隐藏 tooltip
             tooltip.style("visibility", "hidden");
           })
-          .on("click", function () {
-            // 图标点击事件（用于后续节点开闭的svg切换）
-            console.log("click");
-            console.log(this);
-            d3.select(this).attr("xlink:href", type1Icon); // 切换图标。type1Icon对应需要切换为的图标，可根据需求修改
-          });
+          // .on("click", function () {
+          //   // 图标点击事件（用于后续节点开闭的svg切换）
+          //   console.log("click");
+          //   console.log(this);
+          //   d3.select(this).attr("xlink:href", type1Icon); // 切换图标。type1Icon对应需要切换为的图标，可根据需求修改
+          // });
       });
     },
     getPointOnLine(sourceNode, targetNode, r0) {
