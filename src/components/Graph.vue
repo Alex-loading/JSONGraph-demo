@@ -135,9 +135,13 @@ export default {
             (d) =>
               d.y +
               (this.nodeIcons[d.type]
-                ? this.nodeIcons[d.type].height
-                : this.nodeIcons.type1.height) /
-                2
+                ? d.direction % 180 == 0
+                  ? this.nodeIcons[d.type].height 
+                  : this.nodeIcons[d.type].width
+                : d.direction % 180 == 0
+                  ? this.nodeIcons.type1.height
+                  : this.nodeIcons.type1.width) /
+                2 + 6
           )
           .attr("width", 60)
           .attr("height", 120)
@@ -154,7 +158,10 @@ export default {
           .data(this.data.edges)
           .enter()
           .append("line")
-          .attr("x1", (d) => this.data.nodes.find((node) => node.id == d.sourceId).x)
+          .attr(
+            "x1",
+            (d) => this.data.nodes.find((node) => node.id == d.sourceId).x
+          )
           .attr(
             "y1",
             (d) => this.data.nodes.find((node) => node.id == d.sourceId).y
@@ -183,22 +190,22 @@ export default {
               : this.linkStyles.solid.strokeDasharray
           )
           .on("mouseover", (event, d) => {
-            console.log("line: mouseover")
-            console.log(d.type)
+            console.log("line: mouseover");
+            console.log(d.type);
             if (d.type === "ACL") {
-              console.log("is an ACL")
+              console.log("is an ACL");
               tooltip
-                  .html(`ACL<br>ID: ${d.id}<br>Label: ${d.label}`)
-                  .style("left", `${event.pageX + 10}px`)
-                  .style("top", `${event.pageY + 10}px`)
-                  .style("visibility", "visible");
+                .html(`ACL<br>ID: ${d.id}<br>Label: ${d.label}`)
+                .style("left", `${event.pageX + 10}px`)
+                .style("top", `${event.pageY + 10}px`)
+                .style("visibility", "visible");
             }
           })
           .on("mousemove", (event, d) => {
             if (d.type === "ACL") {
               tooltip
-                  .style("left", `${event.pageX + 10}px`)
-                  .style("top", `${event.pageY + 10}px`);
+                .style("left", `${event.pageX + 10}px`)
+                .style("top", `${event.pageY + 10}px`);
             }
           })
           .on("mouseout", () => {
@@ -272,12 +279,10 @@ export default {
                 : this.nodeIcons.type1.height) /
                 2
           )
-          .attr("transform", (d) => {
-            const centerX = d.x;
-            const centerY = d.y;
+          .attr("transform", (d) =>
             // 旋转 90 度，以图标中心为中心旋转
-            return `rotate(${d.direction}, ${d.x}, ${d.y})`;
-          })
+            d.type == "Load" ? "none" : `rotate(${d.direction}, ${d.x}, ${d.y})`
+          )
           .on("mouseover", (event, d) => {
             // 当鼠标悬浮在节点上时，显示 tooltip
             tooltip
@@ -295,13 +300,13 @@ export default {
           .on("mouseout", () => {
             // 当鼠标离开节点时，隐藏 tooltip
             tooltip.style("visibility", "hidden");
-          })
-          // .on("click", function () {
-          //   // 图标点击事件（用于后续节点开闭的svg切换）
-          //   console.log("click");
-          //   console.log(this);
-          //   d3.select(this).attr("xlink:href", type1Icon); // 切换图标。type1Icon对应需要切换为的图标，可根据需求修改
-          // });
+          });
+        // .on("click", function () {
+        //   // 图标点击事件（用于后续节点开闭的svg切换）
+        //   console.log("click");
+        //   console.log(this);
+        //   d3.select(this).attr("xlink:href", type1Icon); // 切换图标。type1Icon对应需要切换为的图标，可根据需求修改
+        // });
       });
     },
     getPointOnLine(sourceNode, targetNode, r0) {
