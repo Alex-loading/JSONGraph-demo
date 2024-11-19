@@ -29,15 +29,40 @@ export default {
         edges: [],
       },
       nodeIcons: {
-        type1: { src: type1Icon, width: 40, height: 40 },
-        ACLineSegment: { src: ACLineSegment, width: 20, height: 20 },
-        Disconnector: { src: Disconnector, width: 20, height: 20 },
-        Load: { src: Load, width: 20, height: 20 },
-        Switch: { src: Switch, width: 40, height: 20 },
-        ConnectivityNode: { src: ConnectivityNode, width: 20, height: 20 },
-        Breaker: { src: Breaker, width: 40, height: 20 },
-        BusbarSection: { src: BusbarSection, width: 20, height: 20 },
-        PowerTransformer: { src: PowerTransformer, width: 40, height: 20 },
+        type1: { src: type1Icon, width: 40, height: 40, isCircle: false },
+        ACLineSegment: {
+          src: ACLineSegment,
+          width: 20,
+          height: 20,
+          isCircle: true,
+        },
+        Disconnector: {
+          src: Disconnector,
+          width: 20,
+          height: 20,
+          isCircle: true,
+        },
+        Load: { src: Load, width: 20, height: 20, isCircle: true },
+        Switch: { src: Switch, width: 40, height: 20, isCircle: false },
+        ConnectivityNode: {
+          src: ConnectivityNode,
+          width: 20,
+          height: 20,
+          isCircle: true,
+        },
+        Breaker: { src: Breaker, width: 40, height: 20, isCircle: false },
+        BusbarSection: {
+          src: BusbarSection,
+          width: 20,
+          height: 20,
+          isCircle: true,
+        },
+        PowerTransformer: {
+          src: PowerTransformer,
+          width: 40,
+          height: 20,
+          isCircle: false,
+        },
       },
       linkStyles: {
         solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
@@ -104,21 +129,18 @@ export default {
           .data(this.data.edges)
           .enter()
           .append("line")
-          .attr(
-            "x1",
-            (d) => this.data.nodes.find((node) => node.id === d.sourceId).x
-          )
+          .attr("x1", (d) => this.data.nodes.find((node) => node.id == d.sourceId).x)
           .attr(
             "y1",
-            (d) => this.data.nodes.find((node) => node.id === d.sourceId).y
+            (d) => this.data.nodes.find((node) => node.id == d.sourceId).y
           )
           .attr(
             "x2",
-            (d) => this.data.nodes.find((node) => node.id === d.targetId).x
+            (d) => this.data.nodes.find((node) => node.id == d.targetId).x
           )
           .attr(
             "y2",
-            (d) => this.data.nodes.find((node) => node.id === d.targetId).y
+            (d) => this.data.nodes.find((node) => node.id == d.targetId).y
           )
           .attr("stroke", (d) =>
             this.linkStyles[d.type]
@@ -149,18 +171,7 @@ export default {
             const targetNode = this.data.nodes.find(
               (node) => node.id === d.targetId
             );
-
-            // TODO: 判断方向取长还是宽
-
-            return this.getPointOnLine(
-              sourceNode.x,
-              sourceNode.y,
-              targetNode.x,
-              targetNode.y,
-              this.nodeIcons[sourceNode.type]
-                ? this.nodeIcons[sourceNode.type].width / 2 + 3
-                : this.nodeIcons.type1.width / 2 + 3
-            ).x;
+            return this.getPointOnLine(sourceNode, targetNode, 3).x;
           })
           .attr("cy", (d) => {
             const sourceNode = this.data.nodes.find(
@@ -169,18 +180,9 @@ export default {
             const targetNode = this.data.nodes.find(
               (node) => node.id === d.targetId
             );
-
-            return this.getPointOnLine(
-              sourceNode.x,
-              sourceNode.y,
-              targetNode.x,
-              targetNode.y,
-              this.nodeIcons[sourceNode.type]
-                ? this.nodeIcons[sourceNode.type].width / 2 + 3
-                : this.nodeIcons.type1.width / 2 + 3
-            ).y;
+            return this.getPointOnLine(sourceNode, targetNode, 3).y;
           })
-          .attr("r", 2.7)
+          .attr("r", 2.5)
           .attr("stroke", "blue")
           .attr("fill", "none");
 
@@ -248,6 +250,12 @@ export default {
                 : this.nodeIcons.type1.height) /
                 2
           )
+          .attr("transform", (d) => {
+            const centerX = d.x;
+            const centerY = d.y;
+            // 旋转 90 度，以图标中心为中心旋转
+            return `rotate(${d.direction}, ${d.x}, ${d.y})`;
+          })
           .on("mouseover", (event, d) => {
             // 当鼠标悬浮在节点上时，显示 tooltip
             tooltip
@@ -274,14 +282,137 @@ export default {
           });
       });
     },
-    // 计算连线上的点（未考虑方向）
-    getPointOnLine(x1, y1, x2, y2, w) {
-      const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-      if (length === 0) {
-        return { x: x1, y: y1 };
+    getPointOnLine(sourceNode, targetNode, r0) {
+      const x1 = sourceNode.x;
+      const y1 = sourceNode.y;
+      const x2 = targetNode.x;
+      const y2 = targetNode.y;
+      const sourceDircetion = sourceNode.direction;
+      const info = this.nodeIcons[sourceNode.type]
+        ? this.nodeIcons[sourceNode.type]
+        : this.nodeIcons.type1;
+      const L = info.width;
+      const W = info.height;
+
+      if (info.isCircle) {
+        const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        const t = (L / 2 + r0) / length;
+        return { x: x1 + t * (x2 - x1), y: y1 + t * (y2 - y1) };
+      } else {
+        const theta = (sourceDircetion * Math.PI) / 180;
+        const deltaX = x2 - x1;
+        const deltaY = y2 - y1;
+
+        const cosTheta = Math.cos(-theta);
+        const sinTheta = Math.sin(-theta);
+
+        // 将方向向量旋转到新的坐标系
+        const DxPrime = deltaX * cosTheta - deltaY * sinTheta;
+        const DyPrime = deltaX * sinTheta + deltaY * cosTheta;
+
+        if (sourceDircetion % 180 == 0) {
+          if (x1 == x2) {
+            return {
+              x: x1,
+              y: y2 > y1 ? y1 + (W / 2 + r0) : y1 - (W / 2 + r0),
+            };
+          }
+          if (y1 == y2) {
+            return {
+              x: x2 > x1 ? x1 + (L / 2 + r0) : x1 - (L / 2 + r0),
+              y: y1,
+            };
+          }
+        }
+
+        if (sourceDircetion % 90 == 0) {
+          if (x1 == x2) {
+            return {
+              x: x1,
+              y: y2 > y1 ? y1 + (L / 2 + r0) : y1 - (L / 2 + r0),
+            };
+          }
+          if (y1 == y2) {
+            return {
+              x: x2 > x1 ? x1 + (W / 2 + r0) : x1 - (W / 2 + r0),
+              y: y1,
+            };
+          }
+        }
+
+        // 如果方向向量为零，无法确定直线
+        if (DxPrime === 0 && DyPrime === 0) {
+          console.log("无法确定直线 l");
+          return { x: null, y: null };
+        }
+
+        // 判断与哪一条边相切
+        const tValues = [];
+        if (DxPrime !== 0) {
+          const tRight = (r0 + L / 2) / DxPrime;
+          const xPrime = tRight * DxPrime;
+          const yPrime = tRight * DyPrime;
+          const yContact = yPrime;
+          if (xPrime >= L / 2 && yContact >= -W / 2 && yContact <= W / 2) {
+            tValues.push({ t: tRight, side: "right" });
+          }
+        }
+
+        if (DxPrime !== 0) {
+          const tLeft = (-r0 - L / 2) / DxPrime;
+          const xPrime = tLeft * DxPrime;
+          const yPrime = tLeft * DyPrime;
+          const yContact = yPrime;
+          if (xPrime <= -L / 2 && yContact >= -W / 2 && yContact <= W / 2) {
+            tValues.push({ t: tLeft, side: "left" });
+          }
+        }
+
+        if (DyPrime !== 0) {
+          const tTop = (r0 + W / 2) / DyPrime;
+          const xPrime = tTop * DxPrime;
+          const yPrime = tTop * DyPrime;
+          const xContact = xPrime;
+          if (yPrime >= W / 2 && xContact >= -L / 2 && xContact <= L / 2) {
+            tValues.push({ t: tTop, side: "top" });
+          }
+        }
+
+        if (DyPrime !== 0) {
+          const tBottom = (-r0 - W / 2) / DyPrime;
+          const xPrime = tBottom * DxPrime;
+          const yPrime = tBottom * DyPrime;
+          const xContact = xPrime;
+          if (yPrime <= -W / 2 && xContact >= -L / 2 && xContact <= L / 2) {
+            tValues.push({ t: tBottom, side: "bottom" });
+          }
+        }
+
+        if (tValues.length === 0) {
+          console.log("未找到满足条件的点");
+          return { x: null, y: null };
+        }
+
+        const positiveTValues = tValues.filter((item) => item.t > 0);
+        if (positiveTValues.length === 0) {
+          console.log("未找到正的 t 值");
+          return { x: null, y: null };
+        }
+        const minTItem = positiveTValues.reduce((prev, curr) =>
+          prev.t < curr.t ? prev : curr
+        );
+        const t = minTItem.t;
+        const xPrime = t * DxPrime;
+        const yPrime = t * DyPrime;
+
+        // 将坐标转换回原始坐标系
+        const cosThetaOrig = Math.cos(theta);
+        const sinThetaOrig = Math.sin(theta);
+        const x = x1 + xPrime * cosThetaOrig - yPrime * sinThetaOrig;
+        const y = y1 + xPrime * sinThetaOrig + yPrime * cosThetaOrig;
+
+        return { x, y };
       }
-      const t = w / length;
-      return { x: x1 + t * (x2 - x1), y: y1 + t * (y2 - y1) };
     },
   },
 };
@@ -300,14 +431,14 @@ export default {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
-  .input {
-    width: 160px;
-    margin-right: 10px;
-    height: 30px;
-  }
-  .search {
-    height: 30px;
-  }
+}
+.search-container .input {
+  width: 160px;
+  margin-right: 10px;
+  height: 30px;
+}
+.search-container .search {
+  height: 30px;
 }
 .graph-container {
   height: 800px;
