@@ -66,7 +66,7 @@ export default {
       },
       linkStyles: {
         solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
-        dashed: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "2,2" },
+        dashed: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "2,4" },
         ConnectivityEdge: {
           stroke: "#000000",
           strokeWidth: 2,
@@ -136,7 +136,7 @@ export default {
               d.y +
               (this.nodeIcons[d.type]
                 ? d.direction % 180 == 0
-                  ? this.nodeIcons[d.type].height 
+                  ? this.nodeIcons[d.type].height
                   : this.nodeIcons[d.type].width
                 : d.direction % 180 == 0
                   ? this.nodeIcons.type1.height
