@@ -144,7 +144,7 @@ export default {
             "y",
             (d) => {
               const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
-              if (type.isCircle){
+              if (d.type != "Switch"){
                 return d.y + type.height / 2 + 6;
               } else{
                 const theta = d.direction % 360;
