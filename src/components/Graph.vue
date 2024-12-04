@@ -136,16 +136,23 @@ export default {
             } else {
               const theta = (d.direction * Math.PI) / 180;
               const cosTheta = Math.cos(theta);
-              return d.x - this.nodeIcons[d.type].width * cosTheta / 2 - 30;
+              const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
+              return d.x - type.width * cosTheta / 2 - 30;
             }
           }) // 偏移，使文本居中
           .attr(
             "y",
             (d) => {
-              if (this.nodeIcons[d.type].isCircle){
-                return d.y + this.nodeIcons[d.type].height / 2 + 6;
+              const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
+              if (type.isCircle){
+                return d.y + type.height / 2 + 6;
               } else{
-                return d.y + this.nodeIcons[d.type].height * Math.abs(Math.cos((d.direction * Math.PI) / 180)) / 2 + 6
+                const theta = d.direction % 360;
+                let y = d.y + type.height * Math.abs(Math.cos((theta * Math.PI) / 180)) / 2 + 6;
+                if (theta > 180){
+                  y += type.width * Math.abs(Math.sin((theta - 180 * Math.PI) / 180));
+                }
+                return y;
               }
             })
           .attr("width", 60)
@@ -255,7 +262,6 @@ export default {
           .data(this.data.nodes)
           .enter()
           .append("image")
-          // TODO： 判断节点内容是否被定义，如果没有使用默认图标，后续待完善
           .attr("xlink:href", (d) =>
             this.nodeIcons[d.type]
               ? this.nodeIcons[d.type].src
