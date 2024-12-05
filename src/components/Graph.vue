@@ -19,6 +19,7 @@ import ConnectivityNode from "../components/icons/ConnectivityNode.svg";
 import Breaker from "../components/icons/Breaker.svg";
 import BusbarSection from "../components/icons/BusbarSection.svg";
 import PowerTransformer from "../components/icons/PowerTransformer.svg";
+import TieSwitch from "../components/icons/TieSwitch.svg"
 import {getGraphData} from "@/api/graph.ts";
 
 export default {
@@ -64,6 +65,12 @@ export default {
           height: 20,
           isCircle: false,
         },
+        TieSwitch: {
+          src: TieSwitch,
+          width: 50,
+          height: 20,
+          isCircle: false,
+        }
       },
       linkStyles: {
         solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
@@ -144,15 +151,17 @@ export default {
             "y",
             (d) => {
               const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
-              if (d.type != "Switch"){
-                return d.y + type.height / 2 + 6;
-              } else{
+              if (d.type == "Switch"){
                 const theta = d.direction % 360;
                 let y = d.y + type.height * Math.abs(Math.cos((theta * Math.PI) / 180)) / 2 + 6;
                 if (theta > 180){
                   y += type.width * Math.abs(Math.sin((theta - 180 * Math.PI) / 180));
                 }
                 return y;
+              } else if (d.direction % 180 != 0 && d.direction % 90 == 0){
+                return d.y + type.width / 2 + 6;
+              } else {
+                return d.y + type.height / 2 + 6;
               }
             })
           .attr("width", 60)
