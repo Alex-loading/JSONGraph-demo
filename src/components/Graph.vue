@@ -19,7 +19,8 @@ import ConnectivityNode from "../components/icons/ConnectivityNode.svg";
 import Breaker from "../components/icons/Breaker.svg";
 import BusbarSection from "../components/icons/BusbarSection.svg";
 import PowerTransformer from "../components/icons/PowerTransformer.svg";
-import { getGraphData } from "@/api/graph.ts";
+import {getGraphData} from "@/api/graph.ts";
+
 export default {
   name: "RelationGraph",
   data() {
@@ -43,7 +44,7 @@ export default {
           isCircle: true,
         },
         Load: { src: Load, width: 20, height: 20, isCircle: true },
-        Switch: { src: Switch, width: 40, height: 20, isCircle: false },
+        Switch: { src: Switch, width: 50, height: 20, isCircle: false },
         ConnectivityNode: {
           src: ConnectivityNode,
           width: 20,
@@ -129,20 +130,31 @@ export default {
           .data(this.data.nodes)
           .enter()
           .append("foreignObject")
-          .attr("x", (d) => d.x - 30) // 偏移，使文本居中
+          .attr("x", (d) => {
+            if (d.type != "Switch"){
+              return d.x - 30;
+            } else {
+              const theta = (d.direction * Math.PI) / 180;
+              const cosTheta = Math.cos(theta);
+              const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
+              return d.x - type.width * cosTheta / 2 - 30;
+            }
+          }) // 偏移，使文本居中
           .attr(
             "y",
-            (d) =>
-              d.y +
-              (this.nodeIcons[d.type]
-                ? d.direction % 180 == 0
-                  ? this.nodeIcons[d.type].height
-                  : this.nodeIcons[d.type].width
-                : d.direction % 180 == 0
-                  ? this.nodeIcons.type1.height
-                  : this.nodeIcons.type1.width) /
-                2 + 6
-          )
+            (d) => {
+              const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
+              if (d.type != "Switch"){
+                return d.y + type.height / 2 + 6;
+              } else{
+                const theta = d.direction % 360;
+                let y = d.y + type.height * Math.abs(Math.cos((theta * Math.PI) / 180)) / 2 + 6;
+                if (theta > 180){
+                  y += type.width * Math.abs(Math.sin((theta - 180 * Math.PI) / 180));
+                }
+                return y;
+              }
+            })
           .attr("width", 60)
           .attr("height", 120)
           .append("xhtml:div")
@@ -214,7 +226,12 @@ export default {
 
         // 绘制连线电流（不去重 只考虑起始节点）
         g.selectAll("circle.start")
-          .data(this.data.edges)
+          .data(this.data.edges.filter((d) => {
+            const sourceNode = this.data.nodes.find((node) => node.id === d.sourceId);
+            const targetNode = this.data.nodes.find((node) => node.id === d.targetId);
+            // 仅保留非 "Switch" 类型的边
+            return sourceNode.type !== "Switch";
+          }))
           .enter()
           .append("circle")
           .attr("class", "start")
@@ -245,7 +262,6 @@ export default {
           .data(this.data.nodes)
           .enter()
           .append("image")
-          // TODO： 判断节点内容是否被定义，如果没有使用默认图标，后续待完善
           .attr("xlink:href", (d) =>
             this.nodeIcons[d.type]
               ? this.nodeIcons[d.type].src
@@ -268,7 +284,7 @@ export default {
               (this.nodeIcons[d.type]
                 ? this.nodeIcons[d.type].width
                 : this.nodeIcons.type1.width) /
-                2
+                (d.type == "Switch" ? 1 : 2)
           )
           .attr(
             "y",
