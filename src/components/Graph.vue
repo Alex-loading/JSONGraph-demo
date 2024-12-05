@@ -54,8 +54,8 @@ export default {
         Breaker: { src: Breaker, width: 40, height: 20, isCircle: false },
         BusbarSection: {
           src: BusbarSection,
-          width: 20,
-          height: 20,
+          width: 10,
+          height: 10,
           isCircle: true,
         },
         PowerTransformer: {
