@@ -19,7 +19,8 @@ import ConnectivityNode from "../components/icons/ConnectivityNode.svg";
 import Breaker from "../components/icons/Breaker.svg";
 import BusbarSection from "../components/icons/BusbarSection.svg";
 import PowerTransformer from "../components/icons/PowerTransformer.svg";
-import TieSwitch from "../components/icons/TieSwitch.svg"
+import TieSwitch from "../components/icons/TieSwitch.svg";
+import Substation from "../components/icons/Substation.svg"
 import {getGraphData} from "@/api/graph.ts";
 
 export default {
@@ -31,7 +32,18 @@ export default {
         edges: [],
       },
       nodeIcons: {
-        type1: { src: type1Icon, width: 40, height: 40, isCircle: false },
+        type1: {
+          src: type1Icon,
+          width: 40,
+          height: 40,
+          isCircle: false,
+        },
+        Substation: {
+          src: Substation,
+          width: 40,
+          height: 40,
+          isCircle: false,
+        },
         ACLineSegment: {
           src: ACLineSegment,
           width: 20,
