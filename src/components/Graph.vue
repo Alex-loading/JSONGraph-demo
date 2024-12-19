@@ -4,6 +4,7 @@
       <input class="input" v-model="searchId" placeholder="请输入查询id" />
       <button class="search" @click="refreshGraph">查询</button>
     </div>
+    <deployment />
     <div ref="graphContainer" class="graph-container" :key="searchCount"></div>
   </div>
 </template>
@@ -20,10 +21,12 @@ import Breaker from "../components/icons/Breaker.svg";
 import BusbarSection from "../components/icons/BusbarSection.svg";
 import PowerTransformer from "../components/icons/PowerTransformer.svg";
 import TieSwitch from "../components/icons/TieSwitch.svg";
-import Substation from "../components/icons/Substation.svg"
-import {getGraphData} from "@/api/graph.ts";
+import Substation from "../components/icons/Substation.svg";
+import { getGraphData } from "@/api/graph.ts";
+import Deployment from "./Deployment.vue";
 
 export default {
+  components: { Deployment },
   name: "RelationGraph",
   data() {
     return {
@@ -82,7 +85,7 @@ export default {
           width: 50,
           height: 20,
           isCircle: false,
-        }
+        },
       },
       linkStyles: {
         solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
@@ -150,32 +153,40 @@ export default {
           .enter()
           .append("foreignObject")
           .attr("x", (d) => {
-            if (d.type != "Switch"){
+            if (d.type != "Switch") {
               return d.x - 30;
             } else {
               const theta = (d.direction * Math.PI) / 180;
               const cosTheta = Math.cos(theta);
-              const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
-              return d.x - type.width * cosTheta / 2 - 30;
+              const type = this.nodeIcons[d.type]
+                ? this.nodeIcons[d.type]
+                : this.nodeIcons.type1;
+              return d.x - (type.width * cosTheta) / 2 - 30;
             }
           }) // 偏移，使文本居中
-          .attr(
-            "y",
-            (d) => {
-              const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
-              if (d.type == "Switch"){
-                const theta = d.direction % 360;
-                let y = d.y + type.height * Math.abs(Math.cos((theta * Math.PI) / 180)) / 2 + 6;
-                if (theta > 180){
-                  y += type.width * Math.abs(Math.sin((theta - 180 * Math.PI) / 180));
-                }
-                return y;
-              } else if (d.direction % 180 != 0 && d.direction % 90 == 0){
-                return d.y + type.width / 2 + 6;
-              } else {
-                return d.y + type.height / 2 + 6;
+          .attr("y", (d) => {
+            const type = this.nodeIcons[d.type]
+              ? this.nodeIcons[d.type]
+              : this.nodeIcons.type1;
+            if (d.type == "Switch") {
+              const theta = d.direction % 360;
+              let y =
+                d.y +
+                (type.height * Math.abs(Math.cos((theta * Math.PI) / 180))) /
+                  2 +
+                6;
+              if (theta > 180) {
+                y +=
+                  type.width *
+                  Math.abs(Math.sin((theta - 180 * Math.PI) / 180));
               }
-            })
+              return y;
+            } else if (d.direction % 180 != 0 && d.direction % 90 == 0) {
+              return d.y + type.width / 2 + 6;
+            } else {
+              return d.y + type.height / 2 + 6;
+            }
+          })
           .attr("width", 60)
           .attr("height", 120)
           .append("xhtml:div")
@@ -247,12 +258,18 @@ export default {
 
         // 绘制连线电流（不去重 只考虑起始节点）
         g.selectAll("circle.start")
-          .data(this.data.edges.filter((d) => {
-            const sourceNode = this.data.nodes.find((node) => node.id === d.sourceId);
-            const targetNode = this.data.nodes.find((node) => node.id === d.targetId);
-            // 仅保留非 "Switch" 类型的边
-            return sourceNode.type !== "Switch";
-          }))
+          .data(
+            this.data.edges.filter((d) => {
+              const sourceNode = this.data.nodes.find(
+                (node) => node.id === d.sourceId
+              );
+              const targetNode = this.data.nodes.find(
+                (node) => node.id === d.targetId
+              );
+              // 仅保留非 "Switch" 类型的边
+              return sourceNode.type !== "Switch";
+            })
+          )
           .enter()
           .append("circle")
           .attr("class", "start")
@@ -484,6 +501,7 @@ export default {
 
 <style scoped>
 .wrapper {
+  position: relative;
   width: 100%;
   height: 100vh;
   display: flex;
