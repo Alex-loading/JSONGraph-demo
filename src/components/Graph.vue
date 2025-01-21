@@ -1,16 +1,91 @@
 <template>
   <div class="wrapper">
-    <div class="search-container">
-      <input class="input" v-model="searchId" placeholder="请输入查询id" />
-      <button class="search" @click="refreshGraph">查询</button>
-    </div>
+    <a-collapse
+      v-model:activeKey="activeKey"
+      accordion
+      class="collapse-container"
+    >
+      <a-collapse-panel key="1" header="根据id查询单线图">
+        <div>
+          <a-input
+            class="input"
+            v-model:value="searchId"
+            placeholder="请输入查询id"
+          />
+          <a-button class="search" @click="refreshGraph" type="primary">查询</a-button>
+        </div>
+      </a-collapse-panel>
+      <a-collapse-panel key="2" header="根据馈线树型结构查询单线图">
+        <div class="tree-container">
+          <a-tree
+            v-model:selectedKeys="selectedKeys"
+            :tree-data="treeData"
+            @select="onSelect"
+          >
+          </a-tree>
+        </div>
+      </a-collapse-panel>
+      <a-collapse-panel key="3" header="获取量测数据">
+        <div style="width: 300px">
+          <a-form
+            :model="formState"
+            :label-col="labelCol"
+            :wrapper-col="wrapperCol"
+            labelAlign="left"
+          >
+            <a-form-item label="节点ID">
+              <div v-if="formState.name != ''">{{ formState.name }}</div>
+              <div v-else style="font-weight: 500">
+                请点击load类型的节点获取
+              </div>
+            </a-form-item>
+            <a-form-item label="日期">
+              <a-radio-group v-model:value="formState.date">
+                <a-radio value="10">10月1日</a-radio>
+                <a-radio value="11">11月1日</a-radio>
+                <a-radio value="12">12月1日</a-radio>
+              </a-radio-group>
+            </a-form-item>
+            <a-form-item label="量测时间">
+              <a-time-picker
+                v-model:value="formState.moment"
+                :minuteStep="30"
+                format="HH:mm"
+                placeholder="请选择时间"
+              />
+            </a-form-item>
+            <a-form-item :wrapper-col="{ offset: 6 }">
+              <a-button type="primary" @click="onMeasurementSubmit"
+                >获取</a-button
+              >
+              <a-button style="margin-left: 10px" @click="onMeasurementReset">清空</a-button>
+            </a-form-item>
+
+            <div v-if="measurementRes.length != 0">
+              <a-divider>量测数据</a-divider>
+              <div style="max-height: 400px; overflow-y: scroll">
+                <a-form-item
+                  v-for="(value, key) in measurementRes"
+                  :key="key"
+                  :label="key"
+                  class="data-line"
+                >
+                  <span>{{ value }}</span>
+                </a-form-item>
+              </div>
+            </div>
+          </a-form>
+        </div>
     <deployment />
+      </a-collapse-panel>
+    </a-collapse>
     <div ref="graphContainer" class="graph-container" :key="searchCount"></div>
   </div>
 </template>
 
 <script>
 import * as d3 from "d3";
+import dayjs from "dayjs";
 import type1Icon from "../components/icons/type1.svg";
 import ACLineSegment from "../components/icons/ACLineSegment.svg";
 import Disconnector from "../components/icons/Disconnector.svg";
@@ -21,8 +96,8 @@ import Breaker from "../components/icons/Breaker.svg";
 import BusbarSection from "../components/icons/BusbarSection.svg";
 import PowerTransformer from "../components/icons/PowerTransformer.svg";
 import TieSwitch from "../components/icons/TieSwitch.svg";
-import Substation from "../components/icons/Substation.svg";
-import { getGraphData } from "@/api/graph.ts";
+import Substation from "../components/icons/Substation.svg";;
+import {  getGraphData , getTreeData, getMeasurementData } from "@/api/graph.ts";
 import Deployment from "./Deployment.vue";
 
 export default {
@@ -34,6 +109,21 @@ export default {
         nodes: [],
         edges: [],
       },
+      activeKey: 1,
+      treeData: [],
+      selectedKeys: [],
+      formState: {
+        name: "",
+        date: "10",
+        moment: "",
+      },
+      labelCol: {
+        span: 6,
+      },
+      wrapperCol: {
+        span: 24,
+      },
+      measurementRes: [],
       nodeIcons: {
         type1: {
           src: type1Icon,
@@ -100,13 +190,28 @@ export default {
       searchId: "",
     };
   },
+  mounted() {
+    getTreeData().then((res) => {
+      this.treeData = res.data.data.subStations.map((station) => ({
+        title: station.name, 
+        key: station.name, 
+        children: station.feeders.map((feeder) => ({
+          title: feeder.name, 
+          key: feeder.id, 
+        })),
+      }));
+    });
+  },
   methods: {
     refreshGraph() {
       this.searchCount += 1;
       this.createGraph();
     },
     createGraph() {
-      getGraphData(this.searchId).then((res) => {
+      getGraphData(
+        this.searchId,
+        dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")
+      ).then((res) => {
         console.log(res);
         this.data = res.data.data;
         console.log("data", this.data);
@@ -354,13 +459,14 @@ export default {
           .on("mouseout", () => {
             // 当鼠标离开节点时，隐藏 tooltip
             tooltip.style("visibility", "hidden");
+          })
+          .on("click", (event, d) => {
+            // 图标点击事件（用于后续节点开闭的svg切换）
+            if (d.type === "Load") {
+              this.formState.name = d.id;
+              this.activeKey = 3;
+            }
           });
-        // .on("click", function () {
-        //   // 图标点击事件（用于后续节点开闭的svg切换）
-        //   console.log("click");
-        //   console.log(this);
-        //   d3.select(this).attr("xlink:href", type1Icon); // 切换图标。type1Icon对应需要切换为的图标，可根据需求修改
-        // });
       });
     },
     getPointOnLine(sourceNode, targetNode, r0) {
@@ -495,6 +601,34 @@ export default {
         return { x, y };
       }
     },
+    onSelect(selectedKeys, info) {
+      if (info.node.children && info.node.children.length > 0) {
+        return;
+      } else {
+        this.searchId = selectedKeys[0];
+        this.refreshGraph();
+      }
+    },
+    onMeasurementSubmit() {
+      const hour = dayjs(this.formState.moment).hour();
+      const minute = dayjs(this.formState.moment).minute();
+      let timeIndex = hour * 2 + minute / 30;
+      getMeasurementData({
+        deviceId: this.formState.name,
+        date: this.formState.date,
+        timeStamp: timeIndex,
+      }).then((res) => {
+        this.measurementRes = res.data.data;
+      });
+    },
+    onMeasurementReset() {
+      this.formState = {
+        name: "",
+        date: "10",
+        moment: "",
+      };
+      this.measurementRes = [];
+    },
   },
 };
 </script>
@@ -505,30 +639,38 @@ export default {
   width: 100%;
   height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.search-container {
+  align-items: start;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
+  padding: 20px;
+  gap: 20px;
 }
-.search-container .input {
-  width: 160px;
+
+.collapse-container {
+  width: 350px;
+}
+
+.input {
+  width: 200px;
   margin-right: 10px;
-  height: 30px;
 }
-.search-container .search {
-  height: 30px;
+
+.tree-container {
+  margin-top: 5px;
+  height: 70vh;
+  overflow: scroll;
 }
+
+.data-line {
+  margin-bottom: 0;
+}
+
 .graph-container {
-  height: 800px;
-  width: 80%;
-  justify-content: center;
+  height: 100%;
+  flex: 1;
+  justify-content: end;
   align-items: center;
-  margin-top: 20px;
-  border: #282828 solid 1px;
+  border: #d9d9d9 solid 1px;
+  border-radius: 10px;
   overflow: hidden; /* 隐藏溢出内容 */
 }
 </style>
