@@ -1,5 +1,4 @@
 {
-  "files": [],
   "references": [
     {
       "path": "./tsconfig.node.json"
@@ -8,15 +7,20 @@
       "path": "./tsconfig.app.json"
     }
   ],
-
   "compilerOptions": {
     "composite": true,
     "noImplicitAny": false,
     "baseUrl": ".",
+    "allowJs": true, 
+    "outDir": "dist",
     "paths": {
       "@/*": [
-        "./src/*"
+        "./src/*",
       ]
     }
-  }
+  },
+  "include": [
+    "./src/**/*",
+    "src/assets/*.js"
+  ]
 }

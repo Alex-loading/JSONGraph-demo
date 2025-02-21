@@ -1,104 +1,30 @@
 <template>
   <div class="wrapper">
-    <a-collapse
-      v-model:activeKey="activeKey"
-      accordion
-      class="collapse-container"
-    >
-      <a-collapse-panel key="1" header="根据id查询单线图">
-        <div>
-          <a-input
-            class="input"
-            v-model:value="searchId"
-            placeholder="请输入查询id"
-          />
-          <a-button class="search" @click="refreshGraph" type="primary">查询</a-button>
-        </div>
-      </a-collapse-panel>
-      <a-collapse-panel key="2" header="根据馈线树型结构查询单线图">
-        <div class="tree-container">
-          <a-tree
-            v-model:selectedKeys="selectedKeys"
-            :tree-data="treeData"
-            @select="onSelect"
-          >
-          </a-tree>
-        </div>
-      </a-collapse-panel>
-      <a-collapse-panel key="3" header="获取量测数据">
-        <div style="width: 300px">
-          <a-form
-            :model="formState"
-            :label-col="labelCol"
-            :wrapper-col="wrapperCol"
-            labelAlign="left"
-          >
-            <a-form-item label="节点ID">
-              <div v-if="formState.name != ''">{{ formState.name }}</div>
-              <div v-else style="font-weight: 500">
-                请点击load类型的节点获取
-              </div>
-            </a-form-item>
-            <a-form-item label="日期">
-              <a-radio-group v-model:value="formState.date">
-                <a-radio value="10">10月1日</a-radio>
-                <a-radio value="11">11月1日</a-radio>
-                <a-radio value="12">12月1日</a-radio>
-              </a-radio-group>
-            </a-form-item>
-            <a-form-item label="量测时间">
-              <a-time-picker
-                v-model:value="formState.moment"
-                :minuteStep="30"
-                format="HH:mm"
-                placeholder="请选择时间"
-              />
-            </a-form-item>
-            <a-form-item :wrapper-col="{ offset: 6 }">
-              <a-button type="primary" @click="onMeasurementSubmit"
-                >获取</a-button
-              >
-              <a-button style="margin-left: 10px" @click="onMeasurementReset">清空</a-button>
-            </a-form-item>
-
-            <div v-if="measurementRes.length != 0">
-              <a-divider>量测数据</a-divider>
-              <div style="max-height: 400px; overflow-y: scroll">
-                <a-form-item
-                  v-for="(value, key) in measurementRes"
-                  :key="key"
-                  :label="key"
-                  class="data-line"
-                >
-                  <span>{{ value }}</span>
-                </a-form-item>
-              </div>
-            </div>
-          </a-form>
-        </div>
-    <deployment />
-      </a-collapse-panel>
-    </a-collapse>
+    <div class="input-container">
+      <a-input
+        class="input"
+        v-model:value="searchId"
+        placeholder="请输入查询id"
+      />
+      <a-button class="search" @click="refreshGraph" type="primary"
+        >查询</a-button
+      >
+    </div>
     <div ref="graphContainer" class="graph-container" :key="searchCount"></div>
+    <deployment
+      :graphId="searchId"
+      @handleMasterNodeVisible="handleMasterNodeVisible"
+      @handleNewNodeVisible="handleNewNodeVisible"
+    />
   </div>
 </template>
 
 <script>
 import * as d3 from "d3";
 import dayjs from "dayjs";
-import type1Icon from "../components/icons/type1.svg";
-import ACLineSegment from "../components/icons/ACLineSegment.svg";
-import Disconnector from "../components/icons/Disconnector.svg";
-import Load from "../components/icons/Load.svg";
-import Switch from "../components/icons/Switch.svg";
-import ConnectivityNode from "../components/icons/ConnectivityNode.svg";
-import Breaker from "../components/icons/Breaker.svg";
-import BusbarSection from "../components/icons/BusbarSection.svg";
-import PowerTransformer from "../components/icons/PowerTransformer.svg";
-import TieSwitch from "../components/icons/TieSwitch.svg";
-import Substation from "../components/icons/Substation.svg";;
-import {  getGraphData , getTreeData, getMeasurementData } from "@/api/graph.ts";
-import Deployment from "./Deployment.vue";
+import { getGraphData } from "@/api/graph";
+import Deployment from "@/components/Deployment.vue";
+import { nodeIcons, linkStyles } from "@/assets/graphStyle.js";
 
 export default {
   components: { Deployment },
@@ -109,98 +35,9 @@ export default {
         nodes: [],
         edges: [],
       },
-      activeKey: 1,
-      treeData: [],
-      selectedKeys: [],
-      formState: {
-        name: "",
-        date: "10",
-        moment: "",
-      },
-      labelCol: {
-        span: 6,
-      },
-      wrapperCol: {
-        span: 24,
-      },
-      measurementRes: [],
-      nodeIcons: {
-        type1: {
-          src: type1Icon,
-          width: 40,
-          height: 40,
-          isCircle: false,
-        },
-        Substation: {
-          src: Substation,
-          width: 40,
-          height: 40,
-          isCircle: false,
-        },
-        ACLineSegment: {
-          src: ACLineSegment,
-          width: 20,
-          height: 20,
-          isCircle: true,
-        },
-        Disconnector: {
-          src: Disconnector,
-          width: 20,
-          height: 20,
-          isCircle: true,
-        },
-        Load: { src: Load, width: 20, height: 20, isCircle: true },
-        Switch: { src: Switch, width: 50, height: 20, isCircle: false },
-        ConnectivityNode: {
-          src: ConnectivityNode,
-          width: 20,
-          height: 20,
-          isCircle: true,
-        },
-        Breaker: { src: Breaker, width: 40, height: 20, isCircle: false },
-        BusbarSection: {
-          src: BusbarSection,
-          width: 10,
-          height: 10,
-          isCircle: true,
-        },
-        PowerTransformer: {
-          src: PowerTransformer,
-          width: 40,
-          height: 20,
-          isCircle: false,
-        },
-        TieSwitch: {
-          src: TieSwitch,
-          width: 50,
-          height: 20,
-          isCircle: false,
-        },
-      },
-      linkStyles: {
-        solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
-        dashed: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "2,4" },
-        ConnectivityEdge: {
-          stroke: "#000000",
-          strokeWidth: 2,
-          strokeDasharray: "0",
-        },
-      },
       searchCount: 0,
       searchId: "",
     };
-  },
-  mounted() {
-    getTreeData().then((res) => {
-      this.treeData = res.data.data.subStations.map((station) => ({
-        title: station.name, 
-        key: station.name, 
-        children: station.feeders.map((feeder) => ({
-          title: feeder.name, 
-          key: feeder.id, 
-        })),
-      }));
-    });
   },
   methods: {
     refreshGraph() {
@@ -263,16 +100,16 @@ export default {
             } else {
               const theta = (d.direction * Math.PI) / 180;
               const cosTheta = Math.cos(theta);
-              const type = this.nodeIcons[d.type]
-                ? this.nodeIcons[d.type]
-                : this.nodeIcons.type1;
+              const type = nodeIcons[d.type]
+                ? nodeIcons[d.type]
+                : nodeIcons.type1;
               return d.x - (type.width * cosTheta) / 2 - 30;
             }
           }) // 偏移，使文本居中
           .attr("y", (d) => {
-            const type = this.nodeIcons[d.type]
-              ? this.nodeIcons[d.type]
-              : this.nodeIcons.type1;
+            const type = nodeIcons[d.type]
+              ? nodeIcons[d.type]
+              : nodeIcons.type1;
             if (d.type == "Switch") {
               const theta = d.direction % 360;
               let y =
@@ -324,19 +161,19 @@ export default {
             (d) => this.data.nodes.find((node) => node.id == d.targetId).y
           )
           .attr("stroke", (d) =>
-            this.linkStyles[d.style]
-              ? this.linkStyles[d.style].stroke
-              : this.linkStyles.solid.stroke
+            linkStyles[d.style]
+              ? linkStyles[d.style].stroke
+              : linkStyles.solid.stroke
           )
           .attr("stroke-width", (d) =>
-            this.linkStyles[d.style]
-              ? this.linkStyles[d.style].strokeWidth
-              : this.linkStyles.solid.strokeWidth
+            linkStyles[d.style]
+              ? linkStyles[d.style].strokeWidth
+              : linkStyles.solid.strokeWidth
           )
           .attr("stroke-dasharray", (d) =>
-            this.linkStyles[d.style]
-              ? this.linkStyles[d.style].strokeDasharray
-              : this.linkStyles.solid.strokeDasharray
+            linkStyles[d.style]
+              ? linkStyles[d.style].strokeDasharray
+              : linkStyles.solid.strokeDasharray
           )
           .on("mouseover", (event, d) => {
             console.log("line: mouseover");
@@ -406,36 +243,32 @@ export default {
           .enter()
           .append("image")
           .attr("xlink:href", (d) =>
-            this.nodeIcons[d.type]
-              ? this.nodeIcons[d.type].src
-              : this.nodeIcons.type1.src
+            nodeIcons[d.type] ? nodeIcons[d.type].src : nodeIcons.type1.src
           )
           .attr("width", (d) =>
-            this.nodeIcons[d.type]
-              ? this.nodeIcons[d.type].width
-              : this.nodeIcons.type1.width
+            nodeIcons[d.type] ? nodeIcons[d.type].width : nodeIcons.type1.width
           )
           .attr("height", (d) =>
-            this.nodeIcons[d.type]
-              ? this.nodeIcons[d.type].height
-              : this.nodeIcons.type1.height
+            nodeIcons[d.type]
+              ? nodeIcons[d.type].height
+              : nodeIcons.type1.height
           )
           .attr(
             "x",
             (d) =>
               d.x -
-              (this.nodeIcons[d.type]
-                ? this.nodeIcons[d.type].width
-                : this.nodeIcons.type1.width) /
+              (nodeIcons[d.type]
+                ? nodeIcons[d.type].width
+                : nodeIcons.type1.width) /
                 (d.type == "Switch" ? 1 : 2)
           )
           .attr(
             "y",
             (d) =>
               d.y -
-              (this.nodeIcons[d.type]
-                ? this.nodeIcons[d.type].height
-                : this.nodeIcons.type1.height) /
+              (nodeIcons[d.type]
+                ? nodeIcons[d.type].height
+                : nodeIcons.type1.height) /
                 2
           )
           .attr("transform", (d) =>
@@ -459,13 +292,6 @@ export default {
           .on("mouseout", () => {
             // 当鼠标离开节点时，隐藏 tooltip
             tooltip.style("visibility", "hidden");
-          })
-          .on("click", (event, d) => {
-            // 图标点击事件（用于后续节点开闭的svg切换）
-            if (d.type === "Load") {
-              this.formState.name = d.id;
-              this.activeKey = 3;
-            }
           });
       });
     },
@@ -475,9 +301,9 @@ export default {
       const x2 = targetNode.x;
       const y2 = targetNode.y;
       const sourceDircetion = sourceNode.direction;
-      const info = this.nodeIcons[sourceNode.type]
-        ? this.nodeIcons[sourceNode.type]
-        : this.nodeIcons.type1;
+      const info = nodeIcons[sourceNode.type]
+        ? nodeIcons[sourceNode.type]
+        : nodeIcons.type1;
       const L = info.width;
       const W = info.height;
 
@@ -601,33 +427,11 @@ export default {
         return { x, y };
       }
     },
-    onSelect(selectedKeys, info) {
-      if (info.node.children && info.node.children.length > 0) {
-        return;
-      } else {
-        this.searchId = selectedKeys[0];
-        this.refreshGraph();
-      }
+    handleMasterNodeVisible(isVisible, masterNode) {
+      console.log("Master node", isVisible, masterNode);
     },
-    onMeasurementSubmit() {
-      const hour = dayjs(this.formState.moment).hour();
-      const minute = dayjs(this.formState.moment).minute();
-      let timeIndex = hour * 2 + minute / 30;
-      getMeasurementData({
-        deviceId: this.formState.name,
-        date: this.formState.date,
-        timeStamp: timeIndex,
-      }).then((res) => {
-        this.measurementRes = res.data.data;
-      });
-    },
-    onMeasurementReset() {
-      this.formState = {
-        name: "",
-        date: "10",
-        moment: "",
-      };
-      this.measurementRes = [];
+    handleNewNodeVisible(isVisible, newNode) {
+      console.log("New node", isVisible, newNode);
     },
   },
 };
@@ -639,37 +443,25 @@ export default {
   width: 100%;
   height: 100vh;
   display: flex;
-  align-items: start;
-  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
   gap: 20px;
-}
-
-.collapse-container {
-  width: 350px;
 }
 
 .input {
   width: 200px;
   margin-right: 10px;
-}
-
-.tree-container {
-  margin-top: 5px;
-  height: 70vh;
-  overflow: scroll;
-}
-
-.data-line {
-  margin-bottom: 0;
+  border: gray solid 1px;
 }
 
 .graph-container {
-  height: 100%;
+  position: relative;
   flex: 1;
+  width: 100%;
   justify-content: end;
   align-items: center;
-  border: #d9d9d9 solid 1px;
+  border: gray solid 1px;
   border-radius: 10px;
   overflow: hidden; /* 隐藏溢出内容 */
 }

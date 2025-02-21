@@ -1,55 +1,56 @@
 import axios from "axios";
 
-const request = axios.create({
+const project5 = axios.create({
   baseURL: "http://47.122.67.91:8080",
   timeout: 10000,
 });
 
-request.interceptors.request.use(
-  (response) => {
-    return response; // 请求成功则返回response
-  },
-  (error) => {
-    // 请求失败则显示错误状态
-    console.log("请求失败");
-    return Promise.reject(error);
-  }
-);
+// 创建后端2的 axios 实例
+const project3 = axios.create({
+  baseURL: "https://apifoxmock.com/m1/5623623-5303208-default", // 后端2的基础 URL
+  timeout: 10000, // 超时时间
+});
 
-// 响应拦截器
-request.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    console.log("响应失败");
-    return Promise.reject(error);
-  }
-);
-
-export function getGraphData(id: string, timeStamp: string) {
-  return request({
-    url: `/v1/graph`,
-    params: {
-      id,
-      timeStamp,
+[project5, project3].forEach((instance) => {
+  instance.interceptors.request.use(
+    (response) => {
+      return response; // 请求成功则返回response
     },
+    (error) => {
+      // 请求失败则显示错误状态
+      console.log("请求失败");
+      return Promise.reject(error);
+    }
+  );
+  instance.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    (error) => {
+      console.log("响应失败");
+      return Promise.reject(error);
+    }
+  );
+});
+
+export function getGraphData(id: string) {
+  return project5({
+    url: `/v1/graph/${id}`,
     method: "get",
   });
 }
 
-export function getTreeData(){
-  return request({
-    url: "/v1/graph/tree",
+export function getDeployDetail(){
+  return project3({
+    url: `/measure/detail`,
     method: "get",
   });
 }
 
-
-export function getMeasurementData(params: Object) {
-  return request({
-    url: "/v1/graph/lc",
-    params: params,
-    method: "get",
+export function postDeployCalc(dataBody: JSON){
+  return project3({
+    url: `/measure/start`,
+    data: dataBody,
+    method: "post",
   });
 }

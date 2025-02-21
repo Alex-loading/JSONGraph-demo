@@ -17,36 +17,49 @@
           <template v-if="tabValue == 1">
             <InfoRow
               v-for="item in [
-                'nodeNum',
-                'visibleNum',
-                'visibility',
-                'visibleConclusion',
+                'total',
+                'observeCount',
+                'observability',
+                'summary',
               ]"
               v-bind:key="item"
               :title="paramDict[item]"
               :value="topoAnalysisRes[item]"
             />
+            <a-divider dashed class="divider" />
+            <InfoRow
+              :title="paramDict.updateTime"
+              :value="topoAnalysisRes.updateTime"
+            />
           </template>
           <template v-if="tabValue == 2">
-            <InfoRow :title="paramDict.keyNum" :value="keyMeasureRes.keyNum" />
-            <InfoRow :title="paramDict.addIsVisible"
+            <InfoRow
+              :title="paramDict.masterNode"
+              :value="masterNodeRes.masterNode.length"
+            />
+            <InfoRow :title="paramDict.keyIsVisible"
               ><a-switch
-                v-model:checked="keyMeasureRes.keyIsVisible"
-                @change="handleKeyMeasureChange"
+                v-model:checked="masterNodeRes.keyIsVisible"
+                @change="handleMasterNodeVisible"
             /></InfoRow>
+            <a-divider dashed class="divider" />
+            <InfoRow
+              :title="paramDict.masterNodeTime"
+              :value="masterNodeRes.masterNodeTime"
+            />
           </template>
           <template v-if="tabValue == 3">
             <InfoRow :title="paramDict.optConfigData">
-              <InfoRow :title="paramDict.voltageAmplitude" suffix="%">
+              <InfoRow :title="paramDict.amplitude" suffix="%">
                 <a-input-number
-                  v-model:value="optConfigData.voltageAmplitude"
+                  v-model:value="optConfigData.amplitude"
                   style="width: 40px"
                   size="small"
                 ></a-input-number>
               </InfoRow>
-              <InfoRow :title="paramDict.voltageThreshold" suffix="%">
+              <InfoRow :title="paramDict.phaseAngle" suffix="%">
                 <a-input-number
-                  v-model:value="optConfigData.voltageThreshold"
+                  v-model:value="optConfigData.phaseAngle"
                   style="width: 40px"
                   size="small"
                 ></a-input-number>
@@ -57,35 +70,33 @@
             </InfoRow>
             <a-divider dashed class="divider" />
             <InfoRow
-              :title="paramDict.addPointNum"
-              :value="optConfigRes.addPointNum"
+              :title="paramDict.newNode"
+              :value="newNodeRes.newNode.length"
             />
 
             <InfoRow :title="paramDict.optConfigRes">
               <InfoRow
-                :title="paramDict.voltageAmplitude"
-                :value="optConfigRes.voltageAmplitude"
+                :title="paramDict.amplitude"
+                :value="newNodeRes.amplitudePercent"
                 suffix="%"
               />
               <InfoRow
-                :title="paramDict.voltageThreshold"
-                :value="optConfigRes.voltageThreshold"
+                :title="paramDict.phaseAngle"
+                :value="newNodeRes.phaseAnglePercent"
                 suffix="%"
               />
             </InfoRow>
             <InfoRow :title="paramDict.addIsVisible"
               ><a-switch
-                v-model:checked="optConfigRes.addIsVisible"
-                @change="handleOptConfigChange"
+                v-model:checked="newNodeRes.addIsVisible"
+                @change="handleNewNodeVisible"
             /></InfoRow>
+            <a-divider dashed class="divider" />
+            <InfoRow
+              :title="paramDict.newNodeTime"
+              :value="newNodeRes.newNodeTime"
+            />
           </template>
-          <a-divider dashed class="divider" />
-          <InfoRow
-            v-for="item in ['finishTime', 'status']"
-            v-bind:key="item"
-            :title="paramDict[item]"
-            :value="calcRes[item]"
-          />
         </div>
       </a-collapse-panel>
     </a-collapse>
@@ -98,8 +109,18 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive } from "vue";
+import { ref } from "vue";
+import { getDeployDetail, postDeployCalc } from "@/api/graph.ts";
 import InfoRow from "./InfoRow.vue";
+import { onMounted, onUpdated } from "vue";
+import dayjs from "dayjs";
+const props = defineProps({
+  graphId: {
+    type: String,
+    required: true,
+  },
+});
+const emit = defineEmits(["handleMasterNodeVisible", "handleNewNodeVisible"]);
 const tabValue = ref(1);
 const titleList = [
   {
@@ -116,54 +137,83 @@ const titleList = [
   },
 ];
 const paramDict = {
-  nodeNum: "总节点数",
-  visibleNum: "可观节点数",
-  visibility: "可观度",
-  visibleConclusion: "可观性评估结论",
-  finishTime: "数据完成时间",
-  status: "计算状态",
-  keyNum: "关键量测位置个数",
+  total: "总节点数",
+  observeCount: "可观节点数",
+  observability: "可观度",
+  summary: "可观性评估结论",
+  updateTime: "数据完成时间",
+  masterNodeTime: "数据完成时间",
+  masterNode: "关键量测位置个数",
   keyIsVisible: "关键量测位置",
-  voltageAmplitude: "电压幅值",
-  voltageThreshold: "电压相角",
-  addPointNum: "新增量测布点个数",
+  amplitude: "电压幅值",
+  phaseAngle: "电压相角",
+  newNode: "新增量测布点个数",
+  newNodeTime: "数据完成时间",
   addIsVisible: "新增量测位置",
   optConfigData: "设置状态估计误差阈值",
   optConfigRes: "满足状态估计误差的节点占比",
 };
 const topoAnalysisRes = ref({
-  nodeNum: 0,
-  visibleNum: 0,
-  visibility: 0,
-  visibleConclusion: "",
+  total: 0,
+  observeCount: 0,
+  observability: 0,
+  summary: "",
+  updateTime: "",
 });
-const keyMeasureRes = ref({
-  keyNum: 0,
+const masterNodeRes = ref({
+  masterNode: [],
   keyIsVisible: false,
+  masterNodeTime: "",
 });
 const optConfigData = ref({
-  voltageAmplitude: 1,
-  voltageThreshold: 1,
+  amplitude: 1,
+  phaseAngle: 1,
 });
-const optConfigRes = ref({
-  addPointNum: 0,
-  voltageAmplitude: 0,
-  voltageThreshold: 0,
+const newNodeRes = ref({
+  newNode: [],
+  amplitudePercent: 0,
+  phaseAnglePercent: 0,
   addIsVisible: false,
+  newNodeTime: "",
 });
-const calcRes = ref({
-  finishTime: "2021-10-10",
-  status: "已完成",
+
+onMounted(() => {
+  getDetail();
 });
-// 响应函数
+onUpdated(() => {
+  getDetail();
+});
+const getDetail = () => {
+  getDeployDetail().then((res) => {
+    topoAnalysisRes.value = res.data.data.observe;
+    masterNodeRes.value.masterNode = res.data.data.node.masterNode;
+    masterNodeRes.value.masterNodeTime = res.data.data.node.masterNodeTime;
+    newNodeRes.value.newNode = res.data.data.node.newNode;
+    newNodeRes.value.newNodeTime = res.data.data.node.newNodeTime;
+    newNodeRes.value.amplitudePercent = res.data.data.node.amplitudePercent;
+    newNodeRes.value.phaseAnglePercent = res.data.data.node.phaseAnglePercent;
+  });
+};
+// TODO: 可能要进行计算
 const handleCalculation = () => {
-  console.log(optConfigData.value);
+  postDeployCalc({
+    amplitude: optConfigData.value.amplitude,
+    phaseAngle: optConfigData.value.phaseAngle,
+    topologyId: props.graphId,
+  }).then((res) => {
+    newNodeRes.value.newNode = res.data.data.node.newNode;
+    newNodeRes.value.newNodeTime = res.data.data.node.newNodeTime;
+    newNodeRes.value.amplitudePercent = res.data.data.node.amplitudePercent;
+    newNodeRes.value.phaseAnglePercent = res.data.data.node.phaseAnglePercent;
+  });
 };
-const handleKeyMeasureChange = (checked) => {
-  console.log(checked, keyMeasureRes.value);
+const handleMasterNodeVisible = (checked) => {
+  console.log(checked, masterNodeRes.value.masterNode);
+  emit("handleMasterNodeVisible", checked, masterNodeRes.value.masterNode);
 };
-const handleOptConfigChange = (checked) => {
-  console.log(checked, optConfigRes.value);
+const handleNewNodeVisible = (checked) => {
+  console.log(checked, newNodeRes.value.newNode);
+  emit("handleNewNodeVisible", checked, newNodeRes.value.newNode);
 };
 </script>
 <style scoped>
@@ -184,6 +234,7 @@ const handleOptConfigChange = (checked) => {
   background-color: whitesmoke;
   margin-top: 10px;
 }
+
 ::v-deep(.ant-collapse-header) {
   padding: 5px !important;
   font-weight: bold;
@@ -210,15 +261,16 @@ const handleOptConfigChange = (checked) => {
   display: flex;
   flex-direction: column;
   align-items: start;
+  border: gray solid 1px;
 }
 .text-bold {
   font-weight: bold;
   margin-bottom: 10px;
 }
-::v-deep(.ant-card-body){
+::v-deep(.ant-card-body) {
   padding: 15px;
 }
-.circle{
+.circle {
   width: 10px;
   height: 10px;
   border-radius: 50%;
