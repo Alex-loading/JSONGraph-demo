@@ -54,3 +54,33 @@ export function postDeployCalc(dataBody: JSON){
     method: "post",
   });
 }
+
+export function getTopologyDetail(feederId: string){
+  return project3({
+    url: `/topology/detail`,
+    method: "get",
+    params: {
+      feederId
+    }
+  });
+}
+
+export function postIdentifyCalc(feederId: string){
+  return project3({
+    url: `/topology/identification/start`,
+    method: "post",
+    data: {
+      feederId
+    }
+  });
+}
+
+export function postCompleteCalc(feederId: string){
+  return project3({
+    url: `/topology/completion/start`,
+    method: "get",
+    data: {
+      feederId
+    }
+  });
+}

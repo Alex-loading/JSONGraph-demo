@@ -97,6 +97,59 @@
               :value="newNodeRes.newNodeTime"
             />
           </template>
+          <template v-if="tabValue == 4">
+            <InfoRow
+              v-for="item in [
+                'feederName',
+                'lineCount',
+                'switchCount',
+                'transformerCount',
+                ]"
+              v-bind:key="item"
+              :title="paramDict[item]"
+              :value="topoBaseInfo[item]"
+            />
+          </template>
+          <template v-if="tabValue == 5">
+            <InfoRow :title="paramDict.startIdentification">
+              <a-button size="small" @click="handleIdentification">开始计算</a-button>
+            </InfoRow>
+            <InfoRow
+              v-for="item in [
+                'switchCount',
+                'identificationTime',
+                ]"
+              v-bind:key="item"
+              :title="paramDict[item]"
+              :value="topoIdentificationData[item]"
+            />
+            <InfoRow :title="paramDict.identificationVisible">
+              <a-switch
+                v-model:checked="topoIdentificationData.identificationVisible"
+                @change="handleIdentificationVisible"
+              />
+            </InfoRow>
+          </template>
+          <template v-if="tabValue == 6">
+            <InfoRow :title="paramDict.startCompletion">
+              <a-button size="small" @click="handleCompletion">开始计算</a-button>
+            </InfoRow>
+            <InfoRow
+              v-for="item in [
+                'lineCount',
+                'completionTime',
+                ]"
+              v-bind:key="item"
+              :title="paramDict[item]"
+              :value="topoCompletionData[item]"
+            />
+            <InfoRow :title="paramDict.completionVisible">
+              <a-switch
+                v-model:checked="topoCompletionData.completionVisible"
+                @change="handleCompletionVisible"
+              />
+            </InfoRow>
+          </template>
         </div>
       </a-collapse-panel>
     </a-collapse>
@@ -110,10 +163,9 @@
 </template>
 <script setup>
 import { ref } from "vue";
-import { getDeployDetail, postDeployCalc } from "@/api/graph.ts";
+import { getDeployDetail, postCompleteCalc, postDeployCalc, getTopologyDetail, postIdentifyCalc } from "@/api/graph.ts";
 import InfoRow from "./InfoRow.vue";
 import { onMounted, onUpdated } from "vue";
-import dayjs from "dayjs";
 const props = defineProps({
   graphId: {
     type: String,
@@ -135,6 +187,18 @@ const titleList = [
     id: 3,
     title: "量测优化配置",
   },
+  {
+    id: 4,
+    title: "拓扑基本信息",
+  },
+  {
+    id: 5,
+    title: "拓扑错误辨识",
+  },
+  {
+    id: 6,
+    title: "拓扑补全",
+  },
 ];
 const paramDict = {
   total: "总节点数",
@@ -142,17 +206,35 @@ const paramDict = {
   observability: "可观度",
   summary: "可观性评估结论",
   updateTime: "数据完成时间",
-  masterNodeTime: "数据完成时间",
+
   masterNode: "关键量测位置个数",
   keyIsVisible: "关键量测位置",
+  masterNodeTime: "数据完成时间",
+
+  optConfigData: "设置状态估计误差阈值",
   amplitude: "电压幅值",
   phaseAngle: "电压相角",
   newNode: "新增量测布点个数",
-  newNodeTime: "数据完成时间",
-  addIsVisible: "新增量测位置",
-  optConfigData: "设置状态估计误差阈值",
   optConfigRes: "满足状态估计误差的节点占比",
+  addIsVisible: "新增量测位置",
+  newNodeTime: "数据完成时间",
+
+  feederName: "馈线名称",
+  lineCount: "补全线路数量",
+  switchCount: "开关数量",
+  transformerCount: "专变数量",
+
+  startCompletion: "拓扑补全",
+  lineCount: "补全线路数量",
+  completionTime: "更新时间",
+  completionVisible: "显示补全",
+
+  startIdentification: "拓扑辨识",
+  switchCount: "辨识开关数量",
+  identificationTime: "更新时间",
+  identificationVisible: "显示辨识",
 };
+// 量测配置
 const topoAnalysisRes = ref({
   total: 0,
   observeCount: 0,
@@ -176,6 +258,25 @@ const newNodeRes = ref({
   addIsVisible: false,
   newNodeTime: "",
 });
+// 拓扑补全
+const topoBaseInfo = ref({
+  feederName: "",
+  lineCount: 0,
+  switchCount: 0,
+  transformerCount: 0,
+});
+const topoCompletionData = ref({
+  lineList: [],
+  completionVisible: false,
+  lineCount: 0,
+  completionTime: "",
+});
+const topoIdentificationData = ref({
+  switchList: [],
+  identificationVisible: false,
+  switchCount: 0,
+  identificationTime: "",
+});
 
 onMounted(() => {
   getDetail();
@@ -183,6 +284,8 @@ onMounted(() => {
 onUpdated(() => {
   getDetail();
 });
+
+// 量测优化配置
 const getDetail = () => {
   getDeployDetail().then((res) => {
     topoAnalysisRes.value = res.data.data.observe;
@@ -193,7 +296,17 @@ const getDetail = () => {
     newNodeRes.value.amplitudePercent = res.data.data.node.amplitudePercent;
     newNodeRes.value.phaseAnglePercent = res.data.data.node.phaseAnglePercent;
   });
+  getTopologyDetail(props.graphId).then((topoRes) => {
+    topoBaseInfo.value = topoRes.data.data.base;
+    topoCompletionData.value.lineList = topoRes.data.data.line.lineList;
+    topoCompletionData.value.lineCount = topoRes.data.data.line.lineCount;
+    topoCompletionData.value.completionTime = topoRes.data.data.line.updateTime;
+    topoIdentificationData.value.switchList = topoRes.data.data.switch.switchList;
+    topoIdentificationData.value.switchCount = topoRes.data.data.switch.switchCount;
+    topoIdentificationData.value.identificationTime = topoRes.data.data.switch.updateTime;
+  });
 };
+// 触发量测优化配置模型计算
 // TODO: 可能要进行计算
 const handleCalculation = () => {
   postDeployCalc({
@@ -207,13 +320,41 @@ const handleCalculation = () => {
     newNodeRes.value.phaseAnglePercent = res.data.data.node.phaseAnglePercent;
   });
 };
+// 关键量测位置可视（图源变更）
 const handleMasterNodeVisible = (checked) => {
   console.log(checked, masterNodeRes.value.masterNode);
   emit("handleMasterNodeVisible", checked, masterNodeRes.value.masterNode);
 };
+// 新增量测位置可视（图源变更）
 const handleNewNodeVisible = (checked) => {
   console.log(checked, newNodeRes.value.newNode);
   emit("handleNewNodeVisible", checked, newNodeRes.value.newNode);
+};
+// 触发拓扑辨识
+const handleIdentification = () => {
+  postIdentifyCalc(props.graphId).then((res) => {
+    console.log(res);
+    console.log("触发拓扑辨识")
+    // TODO: toast提示
+  });
+};
+// 触发拓扑补全
+const handleCompletion = () => {
+  postCompleteCalc(props.graphId).then((res) => {
+    console.log(res);
+    console.log("触发拓扑补全")
+    // TODO: toast提示
+  });
+};
+// 拓扑辨识可视（图源变更）
+const handleIdentificationVisible = (checked) => {
+  console.log(checked, );
+  emit("handleIdentificationVisible", checked, topoIdentificationData.value.switchList);
+};
+// 拓扑补全可视（图源变更）
+const handleCompletionVisible = (checked) => {
+  console.log(checked, );
+  emit("handleCompletionVisible", checked, topoCompletionData.value.lineList);
 };
 </script>
 <style scoped>
@@ -223,20 +364,23 @@ const handleNewNodeVisible = (checked) => {
   right: 10px;
   display: flex;
   flex-direction: column;
+  align-items: end;
 }
 
 .radio-group {
-  width: 540px;
+  width: 1080px;
   display: flex;
 }
 
 .collapse {
+  width: 600px;
   background-color: whitesmoke;
   margin-top: 10px;
 }
 
 ::v-deep(.ant-collapse-header) {
-  padding: 5px !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
   font-weight: bold;
 }
 ::v-deep(.ant-collapse-content) {

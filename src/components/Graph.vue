@@ -15,6 +15,8 @@
       :graphId="searchId"
       @handleMasterNodeVisible="handleMasterNodeVisible"
       @handleNewNodeVisible="handleNewNodeVisible"
+      @handleIdentificationVisible = "handleIdentificationVisible"
+      @handleCompletionVisible="handleCompletionVisible"
     />
   </div>
 </template>
@@ -433,6 +435,12 @@ export default {
     handleNewNodeVisible(isVisible, newNode) {
       console.log("New node", isVisible, newNode);
     },
+    handleIdentificationVisible(isVisible, switchList) {
+      console.log("Identification", isVisible, switchList);
+    },
+    handleCompletionVisible(isVisible, lineList) {
+      console.log("Completion", isVisible, lineList);
+    },
   },
 };
 </script>
@@ -444,7 +452,7 @@ export default {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: start;
   padding: 20px;
   gap: 20px;
 }
