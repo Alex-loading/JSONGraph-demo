@@ -209,11 +209,13 @@ const handleCalculation = () => {
 };
 const handleMasterNodeVisible = (checked) => {
   console.log(checked, masterNodeRes.value.masterNode);
-  emit("handleMasterNodeVisible", checked, masterNodeRes.value.masterNode);
+  emit("handleMasterNodeVisible", checked, masterNodeRes.value.masterNode)
+  // emit("handleMasterNodeVisible", checked, ['100032507']); // 测试用(graphId = 4)
 };
 const handleNewNodeVisible = (checked) => {
   console.log(checked, newNodeRes.value.newNode);
   emit("handleNewNodeVisible", checked, newNodeRes.value.newNode);
+  // emit("handleMasterNodeVisible", checked, ['100032435']); // 测试用(graphId = 4)
 };
 </script>
 <style scoped>

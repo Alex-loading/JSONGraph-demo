@@ -427,11 +427,24 @@ export default {
         return { x, y };
       }
     },
-    handleMasterNodeVisible(isVisible, masterNode) {
-      console.log("Master node", isVisible, masterNode);
+    handleNodeVisibility(isVisible, nodeSet, iconType) {
+      console.log(`Node visibility update - Type: ${iconType}`, isVisible, nodeSet);
+      const svg = d3.select(this.$refs.graphContainer).select("svg");
+      if (svg.empty()) return;
+      const g = svg.select("g");
+
+      const nodeIds = nodeSet.reduce((acc, id) => (acc[id] = true, acc), {});
+      g.selectAll("image")
+        .filter(d => nodeIds[d.id])
+        .attr("href", d => isVisible ? nodeIcons[iconType].src : nodeIcons[d.type].src)
+        .attr("xlink:href", d => isVisible ? nodeIcons[iconType].src : nodeIcons[d.type].src); // 兼容旧浏览器
     },
+    handleMasterNodeVisible(isVisible, masterNode) {
+      this.handleNodeVisibility(isVisible, masterNode, 'type1');
+    },
+
     handleNewNodeVisible(isVisible, newNode) {
-      console.log("New node", isVisible, newNode);
+      this.handleNodeVisibility(isVisible, newNode, 'type1'); // 根据实际图标类型修改第二个参数
     },
   },
 };
