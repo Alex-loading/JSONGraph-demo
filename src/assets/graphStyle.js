@@ -9,6 +9,9 @@ import BusbarSection from "../components/icons/BusbarSection.svg";
 import PowerTransformer from "../components/icons/PowerTransformer.svg";
 import TieSwitch from "../components/icons/TieSwitch.svg";
 import Substation from "../components/icons/Substation.svg";
+import MasterPosition from "../components/icons/MasterPosition.svg";
+import NewPosition from "../components/icons/NewPosition.svg";
+import ExistPosition from "../components/icons/ExistPosition.svg";
 
 export const nodeIcons = {
   type1: {
@@ -19,7 +22,7 @@ export const nodeIcons = {
   },
   Substation: {
     src: Substation,
-    matserSrc:1,
+    matserSrc: 1,
     newSrc: 2,
     width: 40,
     height: 40,
@@ -64,9 +67,27 @@ export const nodeIcons = {
     height: 20,
     isCircle: false,
   },
+  MasterPosition: {
+    src: MasterPosition,
+    width: 20,
+    height: 20,
+    isCircle: true,
+  },
+  NewPosition: {
+    src: NewPosition,
+    width: 20,
+    height: 20,
+    isCircle: true,
+  },
+  ExistPosition: {
+    src: ExistPosition,
+    width: 20,
+    height: 20,
+    isCircle: true,
+  },
 };
 
-export const linkStyles =  {
+export const linkStyles = {
   solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
   dashed: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "2,4" },
   ConnectivityEdge: {

@@ -440,11 +440,11 @@ export default {
         .attr("xlink:href", d => isVisible ? nodeIcons[iconType].src : nodeIcons[d.type].src); // 兼容旧浏览器
     },
     handleMasterNodeVisible(isVisible, masterNode) {
-      this.handleNodeVisibility(isVisible, masterNode, 'type1');
+      this.handleNodeVisibility(isVisible, masterNode, 'MasterPosition');
     },
 
     handleNewNodeVisible(isVisible, newNode) {
-      this.handleNodeVisibility(isVisible, newNode, 'type1'); // 根据实际图标类型修改第二个参数
+      this.handleNodeVisibility(isVisible, newNode, 'NewPosition');
     },
   },
 };

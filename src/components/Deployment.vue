@@ -102,9 +102,9 @@
     </a-collapse>
     <a-card class="deployment-card">
       <div class="text-bold">图例</div>
-      <InfoRow title="已有测量的位置"><div class="circle"></div></InfoRow
-      ><InfoRow title="关键测量的位置"><div class="circle"></div></InfoRow
-      ><InfoRow title="新增测量的位置"><div class="circle"></div></InfoRow
+      <InfoRow title="已有测量的位置"><img :src="ExistPosition" class="icon"/></InfoRow>
+      <InfoRow title="关键测量的位置"><img :src="MasterPosition" class="icon"/></InfoRow
+      ><InfoRow title="新增测量的位置"><img :src="NewPosition" class="icon"/></InfoRow
     ></a-card>
   </div>
 </template>
@@ -113,7 +113,10 @@ import { ref } from "vue";
 import { getDeployDetail, postDeployCalc } from "@/api/graph.ts";
 import InfoRow from "./InfoRow.vue";
 import { onMounted, onUpdated } from "vue";
-import dayjs from "dayjs";
+import ExistPosition from "../components/icons/ExistPosition.svg?url";
+import MasterPosition from "../components/icons/MasterPosition.svg?url";
+import NewPosition from "../components/icons/NewPosition.svg?url";
+
 const props = defineProps({
   graphId: {
     type: String,
@@ -215,7 +218,7 @@ const handleMasterNodeVisible = (checked) => {
 const handleNewNodeVisible = (checked) => {
   console.log(checked, newNodeRes.value.newNode);
   emit("handleNewNodeVisible", checked, newNodeRes.value.newNode);
-  // emit("handleMasterNodeVisible", checked, ['100032435']); // 测试用(graphId = 4)
+  // emit("handleNewNodeVisible", checked, ['100032435']); // 测试用(graphId = 4)
 };
 </script>
 <style scoped>
@@ -272,10 +275,8 @@ const handleNewNodeVisible = (checked) => {
 ::v-deep(.ant-card-body) {
   padding: 15px;
 }
-.circle {
+.icon {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
-  background-color: blue;
 }
 </style>
