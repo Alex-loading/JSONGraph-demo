@@ -457,7 +457,7 @@ export default {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: start;
   padding: 20px;
   gap: 20px;
 }

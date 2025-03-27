@@ -12,5 +12,13 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    proxy: {
+      '/measure': {
+        target: 'http://localhost:8090', // 后端服务地址
+        changeOrigin: true,
+      }
+    }
   }
 })

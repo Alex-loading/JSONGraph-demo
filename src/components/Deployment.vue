@@ -187,14 +187,18 @@ onUpdated(() => {
   getDetail();
 });
 const getDetail = () => {
-  getDeployDetail().then((res) => {
-    topoAnalysisRes.value = res.data.data.observe;
-    masterNodeRes.value.masterNode = res.data.data.node.masterNode;
-    masterNodeRes.value.masterNodeTime = res.data.data.node.masterNodeTime;
-    newNodeRes.value.newNode = res.data.data.node.newNode;
-    newNodeRes.value.newNodeTime = res.data.data.node.newNodeTime;
-    newNodeRes.value.amplitudePercent = res.data.data.node.amplitudePercent;
-    newNodeRes.value.phaseAnglePercent = res.data.data.node.phaseAnglePercent;
+  getDeployDetail("10DKX-604769").then((res) => {
+    topoAnalysisRes.value.total = res.data.data.total;
+    topoAnalysisRes.value.observeCount = res.data.data.observeCount;
+    topoAnalysisRes.value.observability = res.data.data.observability;
+    topoAnalysisRes.value.summary = res.data.data.summary;
+    topoAnalysisRes.value.updateTime = res.data.data.updateTime;
+    masterNodeRes.value.masterNode = res.data.data.masterNode;
+    masterNodeRes.value.masterNodeTime = res.data.data.masterNodeTime;
+    newNodeRes.value.newNode = res.data.data.newNode;
+    newNodeRes.value.newNodeTime = res.data.data.newNodeTime;
+    newNodeRes.value.amplitudePercent = res.data.data.amplitudePercent;
+    newNodeRes.value.phaseAnglePercent = res.data.data.phaseAnglePercent;
   });
 };
 // TODO: 可能要进行计算

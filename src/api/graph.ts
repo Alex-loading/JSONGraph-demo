@@ -1,13 +1,13 @@
 import axios from "axios";
 
 const project5 = axios.create({
-  baseURL: "http://47.122.67.91:8080",
+  baseURL: "http://192.168.1.123:30020", // 此处url为南京公司鲲游后端地址
   timeout: 10000,
 });
 
 // 创建后端2的 axios 实例
 const project3 = axios.create({
-  baseURL: "https://apifoxmock.com/m1/5623623-5303208-default", // 后端2的基础 URL
+  baseURL: "/measure", // 后端2的基础 URL
   timeout: 10000, // 超时时间
 });
 
@@ -40,16 +40,19 @@ export function getGraphData(id: string) {
   });
 }
 
-export function getDeployDetail(){
+export function getDeployDetail(feederId: string) {
   return project3({
-    url: `/measure/detail`,
+    url: `/detail`,
     method: "get",
+    params: {
+      feederId: feederId,
+    },
   });
 }
 
-export function postDeployCalc(dataBody: JSON){
+export function postDeployCalc(dataBody: JSON) {
   return project3({
-    url: `/measure/start`,
+    url: `/start`,
     data: dataBody,
     method: "post",
   });
