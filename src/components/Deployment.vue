@@ -235,7 +235,7 @@ const handleNewNodeVisible = (checked) => {
 }
 
 .radio-group {
-  width: 540px;
+  width: 560px;
   display: flex;
 }
 

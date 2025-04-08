@@ -12,6 +12,7 @@
     </div>
     <div ref="graphContainer" class="graph-container" :key="searchCount"></div>
     <deployment
+      v-if="showMeasure"
       :graphId="searchId"
       @handleMasterNodeVisible="handleMasterNodeVisible"
       @handleNewNodeVisible="handleNewNodeVisible"
@@ -29,6 +30,13 @@ import { nodeIcons, linkStyles } from "@/assets/graphStyle.js";
 export default {
   components: { Deployment },
   name: "RelationGraph",
+  props: {
+    mode: {
+      type: String,
+      required: true,
+      validator: (value) => ['topology', 'measure'].includes(value)
+    }
+  },
   data() {
     return {
       data: {
@@ -38,6 +46,11 @@ export default {
       searchCount: 0,
       searchId: "",
     };
+  },
+  computed: {
+    showMeasure() {
+      return this.mode === 'measure';
+    }
   },
   methods: {
     refreshGraph() {

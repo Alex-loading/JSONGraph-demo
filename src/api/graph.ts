@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const project5 = axios.create({
-  baseURL: "http://192.168.1.123:30020", // 此处url为南京公司鲲游后端地址
+  // baseURL: "http://192.168.1.123:30020", // 此处url为南京公司鲲游后端地址
+  baseURL: "http://127.0.0.1:4523/m1/5385065-5057833-default",
   timeout: 10000,
 });
 
