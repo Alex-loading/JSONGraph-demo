@@ -171,7 +171,7 @@
 </template>
 <script setup>
 import { ref, computed, watch } from "vue";
-import { getDeployDetail, postDeployCalc, getTopologyDetail } from "@/api/graph.ts";
+import { getDeployDetail, postDeployCalc, getTopologyDetail, postIdentifyCalc, postCompleteCalc } from "@/api/graph.ts";
 import InfoRow from "./InfoRow.vue";
 import { onMounted, onUpdated } from "vue";
 import ExistPosition from "../components/icons/ExistPosition.svg?url";
@@ -193,7 +193,7 @@ const props = defineProps({
     validator: (value) => ['topology', 'measure'].includes(value)
   }
 });
-const emit = defineEmits(["handleMasterNodeVisible", "handleNewNodeVisible"]);
+const emit = defineEmits(["handleMasterNodeVisible", "handleNewNodeVisible", "handleIdentificationVisible", "handleCompletionVisible"]);
 
 const allTitleList = [
   {
@@ -391,12 +391,12 @@ const handleCompletion = () => {
 };
 // 拓扑辨识可视（图源变更）
 const handleIdentificationVisible = (checked) => {
-  console.log(checked, );
+  console.log(checked, topoIdentificationData.value.switchList);
   emit("handleIdentificationVisible", checked, topoIdentificationData.value.switchList);
 };
 // 拓扑补全可视（图源变更）
 const handleCompletionVisible = (checked) => {
-  console.log(checked, );
+  console.log(checked, topoCompletionData.value.lineList);
   emit("handleCompletionVisible", checked, topoCompletionData.value.lineList);
 };
 </script>

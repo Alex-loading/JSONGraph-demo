@@ -16,6 +16,8 @@
       :mode="mode"
       @handleMasterNodeVisible="handleMasterNodeVisible"
       @handleNewNodeVisible="handleNewNodeVisible"
+      @handleIdentificationVisible="handleIdentificationVisible"
+      @handleCompletionVisible="handleCompletionVisible"
     />
   </div>
 </template>
@@ -452,9 +454,85 @@ export default {
     handleMasterNodeVisible(isVisible, masterNode) {
       this.handleNodeVisibility(isVisible, masterNode, 'MasterPosition');
     },
-
     handleNewNodeVisible(isVisible, newNode) {
       this.handleNodeVisibility(isVisible, newNode, 'NewPosition');
+    },
+    handleIdentificationVisible(isVisible, identificationNode) {
+      console.log("handleIdentificationVisible", isVisible, identificationNode);
+      const svg = d3.select(this.$refs.graphContainer).select("svg");
+      if (svg.empty()) return;
+      const g = svg.select("g");
+      
+      // 创建id到status的映射
+      const idStatusMap = {};
+      identificationNode.forEach(item => {
+        idStatusMap[item.id] = item.status;
+      });
+      
+      // 获取所有需要更新的节点id
+      const nodeIds = identificationNode.map(item => item.id);
+      
+      g.selectAll("image")
+        .filter(d => nodeIds.includes(d.id))
+        .attr("href", d => {
+          if (!isVisible) {
+            return nodeIcons[d.type].src;
+          }
+          // 根据status决定显示哪个图标
+          const status = idStatusMap[d.id];
+          return status === 1 ? nodeIcons.switchConnect.src : nodeIcons.switchDisconnect.src;
+        })
+        .attr("xlink:href", d => {
+          if (!isVisible) {
+            return nodeIcons[d.type].src;
+          }
+          // 根据status决定显示哪个图标
+          const status = idStatusMap[d.id];
+          return status === 1 ? nodeIcons.switchConnect.src : nodeIcons.switchDisconnect.src;
+        }); // 兼容旧浏览器
+    },
+    handleCompletionVisible(isVisible, lineList) {
+      console.log("handleCompletionVisible", isVisible, lineList);
+      const svg = d3.select(this.$refs.graphContainer).select("svg");
+      if (svg.empty()) return;
+      const g = svg.select("g");
+      
+      // 创建 from-to 到 status 的映射
+      const lineStatusMap = {};
+      lineList.forEach(item => {
+        // 创建双向映射，因为边的方向可能是 sourceId->targetId 或 targetId->sourceId
+        const key1 = `${item.from}-${item.to}`;
+        const key2 = `${item.to}-${item.from}`;
+        lineStatusMap[key1] = item.status;
+        lineStatusMap[key2] = item.status;
+      });
+      
+      g.selectAll("line")
+        .attr("stroke", d => {
+          const key1 = `${d.sourceId}-${d.targetId}`;
+          const key2 = `${d.targetId}-${d.sourceId}`;
+          
+          if (!isVisible) {
+            return linkStyles[d.style] ? linkStyles[d.style].stroke : linkStyles.solid.stroke;
+          }
+          if (lineStatusMap.hasOwnProperty(key1) || lineStatusMap.hasOwnProperty(key2)) {
+            return "blue";
+          }
+          return linkStyles[d.style] ? linkStyles[d.style].stroke : linkStyles.solid.stroke;
+        })
+        .attr("stroke-dasharray", d => {
+          const key1 = `${d.sourceId}-${d.targetId}`;
+          const key2 = `${d.targetId}-${d.sourceId}`;
+          
+          if (!isVisible) {
+            return linkStyles[d.style] ? linkStyles[d.style].strokeDasharray : linkStyles.solid.strokeDasharray;
+          }
+          const status = lineStatusMap[key1] !== undefined ? lineStatusMap[key1] : lineStatusMap[key2];
+          if (status !== undefined) {
+            return status === 1 ? "none" : "2, 4"; // 连接用实线，断开用虚线
+          }
+          return linkStyles[d.style] ? linkStyles[d.style].strokeDasharray : linkStyles.solid.strokeDasharray;
+        });
     },
   },
 };

@@ -85,7 +85,7 @@ export function postIdentifyCalc(feederId: string) {
 export function postCompleteCalc(feederId: string) {
   return project3({
     url: `/topology/completion/start`,
-    method: "get",
+    method: "post",
     data: {
       feederId
     }

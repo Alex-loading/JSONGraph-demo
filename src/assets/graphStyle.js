@@ -12,6 +12,8 @@ import Substation from "../components/icons/Substation.svg";
 import MasterPosition from "../components/icons/MasterPosition.svg";
 import NewPosition from "../components/icons/NewPosition.svg";
 import ExistPosition from "../components/icons/ExistPosition.svg";
+import SwitchConnect from "../components/icons/SwitchConnect.svg";
+import SwitchDisconnect from "../components/icons/SwitchDisconnect.svg";
 
 export const nodeIcons = {
   type1: {
@@ -85,6 +87,18 @@ export const nodeIcons = {
     height: 20,
     isCircle: true,
   },
+  switchConnect: {
+    src: SwitchConnect,
+    width: 50,
+    height: 20,
+    isCircle: false,
+  },
+  switchDisconnect: {
+    src: SwitchDisconnect,
+    width: 50,
+    height: 20,
+    isCircle: false,
+  }
 };
 
 export const linkStyles = {
