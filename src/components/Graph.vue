@@ -12,8 +12,8 @@
     </div>
     <div ref="graphContainer" class="graph-container" :key="searchCount"></div>
     <deployment
-      v-if="showMeasure"
       :graphId="searchId"
+      :mode="mode"
       @handleMasterNodeVisible="handleMasterNodeVisible"
       @handleNewNodeVisible="handleNewNodeVisible"
     />
@@ -48,9 +48,6 @@ export default {
     };
   },
   computed: {
-    showMeasure() {
-      return this.mode === 'measure';
-    }
   },
   methods: {
     refreshGraph() {

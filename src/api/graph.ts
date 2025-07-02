@@ -8,7 +8,8 @@ const project5 = axios.create({
 
 // 创建后端2的 axios 实例
 const project3 = axios.create({
-  baseURL: "/measure", // 后端2的基础 URL
+  // baseURL: "/measure", // 后端2的基础 URL
+  baseURL: "http://127.0.0.1:4523/m1/5623623-5303208-default",
   timeout: 10000, // 超时时间
 });
 
@@ -43,7 +44,8 @@ export function getGraphData(id: string) {
 
 export function getDeployDetail(feederId: string) {
   return project3({
-    url: `/detail`,
+    // url: `/detail`,
+    url: `/measure/detail`,
     method: "get",
     params: {
       feederId: feederId,
@@ -53,8 +55,39 @@ export function getDeployDetail(feederId: string) {
 
 export function postDeployCalc(dataBody: JSON) {
   return project3({
-    url: `/start`,
+    // url: `/start`,
+    url: `/measure/start`,
     data: dataBody,
     method: "post",
+  });
+}
+
+export function getTopologyDetail(feederId: string) {
+  return project3({
+    url: `/topology/detail`,
+    method: "get",
+    params: {
+      feederId
+    }
+  });
+}
+
+export function postIdentifyCalc(feederId: string) {
+  return project3({
+    url: `/topology/identification/start`,
+    method: "post",
+    data: {
+      feederId
+    }
+  });
+}
+
+export function postCompleteCalc(feederId: string) {
+  return project3({
+    url: `/topology/completion/start`,
+    method: "get",
+    data: {
+      feederId
+    }
   });
 }
