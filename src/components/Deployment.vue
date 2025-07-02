@@ -181,6 +181,7 @@ import icSwitchConnect from "../components/icons/ic-Switch-connect.svg?url"
 import icSwitchDisconnect from "../components/icons/ic-Switch-disconnect.svg?url"
 import icLineConnect from "../components/icons/ic-Line-connect.svg?url"
 import icLineDisconnect from "../components/icons/ic-Line-disconnect.svg?url"
+import { message } from "ant-design-vue";
 
 const props = defineProps({
   graphId: {
@@ -352,6 +353,7 @@ const getDetail = () => {
 };
 // TODO: 可能要进行计算
 const handleCalculation = () => {
+  message.success("触发量测优化配置, 请稍后刷新");
   postDeployCalc({
     amplitude: optConfigData.value.amplitude,
     phaseAngle: optConfigData.value.phaseAngle,
@@ -379,6 +381,7 @@ const handleIdentification = () => {
     console.log(res);
     console.log("触发拓扑辨识")
     // TODO: toast提示
+    message.success("触发拓扑辨识, 请稍后刷新");
   });
 };
 // 触发拓扑补全
@@ -387,6 +390,7 @@ const handleCompletion = () => {
     console.log(res);
     console.log("触发拓扑补全")
     // TODO: toast提示
+    message.success("触发拓扑补全, 请稍后刷新");
   });
 };
 // 拓扑辨识可视（图源变更）
