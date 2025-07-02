@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="20" viewBox="-20 -10 40 20">
-  <path opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" d="M -20 -10 h 40 v 20 h -40 Z" stroke="#666" fill="blue"/>
+  <path opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" d="M -20 -10 h 40 v 20 h -40 Z" stroke="#666" fill="yellow"/>
   <line x1="-15" y1="0" x2="-5" y2="0" stroke="#ff4444" stroke-width="2"/>
   <line x1="5" y1="0" x2="15" y2="0" stroke="#ff4444" stroke-width="2"/>
   <line x1="-6" y1="0" x2="3" y2="-6" stroke="#ff4444" stroke-width="2"/>
