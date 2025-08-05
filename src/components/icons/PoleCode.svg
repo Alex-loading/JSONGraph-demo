@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <circle opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" cx="10" cy="10" r="9"
+        stroke="gray" fill="lightgray" />
+  <circle opacity="1" stroke-width="1" stroke-opacity="1" fill-opacity="1" cx="10" cy="10" r="1"
+        stroke="skyblue" fill="skyblue" />
+</svg>

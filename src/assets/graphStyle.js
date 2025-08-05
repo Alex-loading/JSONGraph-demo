@@ -14,6 +14,7 @@ import NewPosition from "../components/icons/NewPosition.svg";
 import ExistPosition from "../components/icons/ExistPosition.svg";
 import SwitchConnect from "../components/icons/SwitchConnect.svg";
 import SwitchDisconnect from "../components/icons/SwitchDisconnect.svg";
+import PoleCode from "../components/icons/PoleCode.svg";
 
 export const nodeIcons = {
   type1: {
@@ -43,14 +44,28 @@ export const nodeIcons = {
     isCircle: true,
   },
   Load: { src: Load, width: 20, height: 20, isCircle: true },
+  UsagePoint: { src: Load, width: 20, height: 20, isCircle: true },
   Switch: { src: Switch, width: 50, height: 20, isCircle: false },
+  LoadBreakSwitch: { src: Switch, width: 50, height: 20, isCircle: false },
   ConnectivityNode: {
     src: ConnectivityNode,
     width: 20,
     height: 20,
     isCircle: true,
   },
-  Breaker: { src: Breaker, width: 40, height: 20, isCircle: false },
+  PoleCode: {
+    src: PoleCode,
+    width: 10,
+    height: 10,
+    isCircle: true,
+  }, Junction: {
+    src: ConnectivityNode,
+    width: 20,
+    height: 20,
+    isCircle: true,
+  },
+  Breaker: { src: Breaker, width: 50, height: 20, isCircle: false },
+  Fuse: { src: Breaker, width: 50, height: 20, isCircle: false },
   BusbarSection: {
     src: BusbarSection,
     width: 10,
@@ -58,6 +73,12 @@ export const nodeIcons = {
     isCircle: true,
   },
   PowerTransformer: {
+    src: PowerTransformer,
+    width: 40,
+    height: 20,
+    isCircle: false,
+  },
+  PowerTransformerWinding: {
     src: PowerTransformer,
     width: 40,
     height: 20,

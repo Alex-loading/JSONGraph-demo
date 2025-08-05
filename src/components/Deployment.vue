@@ -328,7 +328,7 @@ onUpdated(() => {
   getDetail();
 });
 const getDetail = () => {
-  getDeployDetail("10DKX-604769").then((res) => {
+  getDeployDetail(props.graphId).then((res) => {
     topoAnalysisRes.value.total = res.data.data.total;
     topoAnalysisRes.value.observeCount = res.data.data.observeCount;
     topoAnalysisRes.value.observability = res.data.data.observability;
@@ -341,14 +341,21 @@ const getDetail = () => {
     newNodeRes.value.amplitudePercent = res.data.data.amplitudePercent;
     newNodeRes.value.phaseAnglePercent = res.data.data.phaseAnglePercent;
   });
-  getTopologyDetail("10DKX-604769").then((topoRes) => {
-    topoBaseInfo.value = topoRes.data.data.base;
-    topoCompletionData.value.lineList = topoRes.data.data.line.lineList;
-    topoCompletionData.value.lineCount = topoRes.data.data.line.lineCount;
-    topoCompletionData.value.completionTime = topoRes.data.data.line.updateTime;
-    topoIdentificationData.value.switchList = topoRes.data.data.switch.switchList;
-    topoIdentificationData.value.switchCount = topoRes.data.data.switch.switchCount;
-    topoIdentificationData.value.identificationTime = topoRes.data.data.switch.updateTime;
+  getTopologyDetail(props.graphId).then((topoRes) => {
+    let base = topoRes.data.data.base
+    if (topoRes.data.data.line){
+      topoCompletionData.value.lineList = topoRes.data.data.line.lineList;
+      topoCompletionData.value.lineCount = topoRes.data.data.line.lineCount;
+      topoCompletionData.value.completionTime = topoRes.data.data.line.updateTime;
+      base.lineCount = topoRes.data.data.line.lineCount;
+    }
+    if (topoRes.data.data.switch){
+      topoIdentificationData.value.switchList = topoRes.data.data.switch.switchList;
+      topoIdentificationData.value.switchCount = topoRes.data.data.switch.switchCount;
+      topoIdentificationData.value.identificationTime = topoRes.data.data.switch.updateTime;
+      base.switchCount = topoRes.data.data.switch.switchCount;
+    }
+    topoBaseInfo.value = base
   });
 };
 // TODO: 可能要进行计算
@@ -378,28 +385,28 @@ const handleNewNodeVisible = (checked) => {
 // 触发拓扑辨识
 const handleIdentification = () => {
   postIdentifyCalc(props.graphId).then((res) => {
-    console.log(res);
-    console.log("触发拓扑辨识")
     // TODO: toast提示
     message.success("触发拓扑辨识, 请稍后刷新");
+    getDetail()
   });
 };
 // 触发拓扑补全
 const handleCompletion = () => {
   postCompleteCalc(props.graphId).then((res) => {
-    console.log(res);
-    console.log("触发拓扑补全")
     // TODO: toast提示
     message.success("触发拓扑补全, 请稍后刷新");
+    getDetail()
   });
 };
 // 拓扑辨识可视（图源变更）
 const handleIdentificationVisible = (checked) => {
+  // debugger
   console.log(checked, topoIdentificationData.value.switchList);
   emit("handleIdentificationVisible", checked, topoIdentificationData.value.switchList);
 };
 // 拓扑补全可视（图源变更）
 const handleCompletionVisible = (checked) => {
+  // debugger
   console.log(checked, topoCompletionData.value.lineList);
   emit("handleCompletionVisible", checked, topoCompletionData.value.lineList);
 };

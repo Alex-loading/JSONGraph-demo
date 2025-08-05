@@ -2,15 +2,19 @@ import axios from "axios";
 
 const project5 = axios.create({
   // baseURL: "http://192.168.1.123:30020", // 此处url为南京公司鲲游后端地址
-  baseURL: "http://127.0.0.1:4523/m1/5385065-5057833-default",
-  timeout: 10000,
+  // baseURL: "http://127.0.0.1:4523/m1/5385065-5057833-default",
+  baseURL: "http://zwjs-precision-7670:8080",
+  // baseURL: "project5",
+  timeout: 300000,
 });
 
 // 创建后端2的 axios 实例
 const project3 = axios.create({
   // baseURL: "/measure", // 后端2的基础 URL
-  baseURL: "http://127.0.0.1:4523/m1/5623623-5303208-default",
-  timeout: 10000, // 超时时间
+  // baseURL: "http://127.0.0.1:4523/m1/5623623-5303208-default",
+  baseURL: "http://zwjs-precision-7670:8090",
+  // baseURL: "project3",
+  timeout: 300000, // 超时时间
 });
 
 [project5, project3].forEach((instance) => {
@@ -38,6 +42,7 @@ const project3 = axios.create({
 export function getGraphData(id: string) {
   return project5({
     url: `/v1/graph/${id}`,
+    // url: `/topology/detail?feederId=${id}`,
     method: "get",
   });
 }
@@ -48,7 +53,7 @@ export function getDeployDetail(feederId: string) {
     url: `/measure/detail`,
     method: "get",
     params: {
-      feederId: feederId,
+      feederId: feederId
     },
   });
 }

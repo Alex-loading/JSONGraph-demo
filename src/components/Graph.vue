@@ -46,7 +46,7 @@ export default {
         edges: [],
       },
       searchCount: 0,
-      searchId: "",
+      searchId: "10DKX-372305",
     };
   },
   computed: {
@@ -208,7 +208,8 @@ export default {
           })
           .on("mouseout", () => {
             tooltip.style("visibility", "hidden");
-          });
+          })
+          .text(function(d) { return d.id; });
 
         // 绘制连线电流（不去重 只考虑起始节点）
         g.selectAll("circle.start")
@@ -458,7 +459,6 @@ export default {
       this.handleNodeVisibility(isVisible, newNode, 'NewPosition');
     },
     handleIdentificationVisible(isVisible, identificationNode) {
-      console.log("handleIdentificationVisible", isVisible, identificationNode);
       const svg = d3.select(this.$refs.graphContainer).select("svg");
       if (svg.empty()) return;
       const g = svg.select("g");
@@ -480,7 +480,7 @@ export default {
           }
           // 根据status决定显示哪个图标
           const status = idStatusMap[d.id];
-          return status === 1 ? nodeIcons.switchConnect.src : nodeIcons.switchDisconnect.src;
+          return status? nodeIcons.switchConnect.src : nodeIcons.switchDisconnect.src;
         })
         .attr("xlink:href", d => {
           if (!isVisible) {
@@ -488,7 +488,7 @@ export default {
           }
           // 根据status决定显示哪个图标
           const status = idStatusMap[d.id];
-          return status === 1 ? nodeIcons.switchConnect.src : nodeIcons.switchDisconnect.src;
+          return status? nodeIcons.switchConnect.src : nodeIcons.switchDisconnect.src;
         }); // 兼容旧浏览器
     },
     handleCompletionVisible(isVisible, lineList) {
@@ -529,7 +529,7 @@ export default {
           }
           const status = lineStatusMap[key1] !== undefined ? lineStatusMap[key1] : lineStatusMap[key2];
           if (status !== undefined) {
-            return status === 1 ? "none" : "2, 4"; // 连接用实线，断开用虚线
+            return status ? "none" : "2, 4"; // 连接用实线，断开用虚线
           }
           return linkStyles[d.style] ? linkStyles[d.style].strokeDasharray : linkStyles.solid.strokeDasharray;
         });
