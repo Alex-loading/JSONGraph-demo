@@ -15,6 +15,7 @@ import ExistPosition from "../components/icons/ExistPosition.svg";
 import SwitchConnect from "../components/icons/SwitchConnect.svg";
 import SwitchDisconnect from "../components/icons/SwitchDisconnect.svg";
 import PoleCode from "../components/icons/PoleCode.svg";
+import GroundDisconnector from "../components/icons/GroundDisconnector.svg";
 
 export const nodeIcons = {
   type1: {
@@ -39,6 +40,12 @@ export const nodeIcons = {
   },
   Disconnector: {
     src: Disconnector,
+    width: 20,
+    height: 20,
+    isCircle: true,
+  },
+  GroundDisconnector: {
+    src: GroundDisconnector,
     width: 20,
     height: 20,
     isCircle: true,
