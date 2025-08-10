@@ -533,6 +533,42 @@ export default {
           }
           return linkStyles[d.style] ? linkStyles[d.style].strokeDasharray : linkStyles.solid.strokeDasharray;
         });
+
+      // 当显示完成度效果时，让显示为实线的连线闪烁两次
+      if (isVisible) {
+        const linesToBlink = g.selectAll("line").filter(d => {
+          const key1 = `${d.sourceId}-${d.targetId}`;
+          const key2 = `${d.targetId}-${d.sourceId}`;
+          const status = lineStatusMap[key1] !== undefined ? lineStatusMap[key1] : lineStatusMap[key2];
+          return !!status; // 任何 truthy 状态均视为连接（需要实线）
+        });
+
+        const getBaseWidth = (d) => (linkStyles[d.style] ? linkStyles[d.style].strokeWidth : linkStyles.solid.strokeWidth);
+
+        // 终止可能已有的动画并重置不透明度/宽度
+        linesToBlink.interrupt()
+          .attr("stroke-opacity", 1)
+          .attr("stroke-width", d => getBaseWidth(d));
+
+        // 闪烁两次（0 -> 1 更明显，同时放大线宽）
+        let sel = linesToBlink;
+        for (let i = 0; i < 4; i += 1) {
+          sel = sel
+            .transition()
+            .duration(200)
+            .ease(d3.easeLinear)
+            .attr("stroke-opacity", 0)
+            .attr("stroke-width", d => getBaseWidth(d) * 1.8)
+            .transition()
+            .duration(200)
+            .ease(d3.easeLinear)
+            .attr("stroke-opacity", 1)
+            .attr("stroke-width", d => getBaseWidth(d));
+        }
+      } else {
+        // 关闭效果时重置所有连线的不透明度并中断动画
+        g.selectAll("line").interrupt().attr("stroke-opacity", 1);
+      }
     },
   },
 };
