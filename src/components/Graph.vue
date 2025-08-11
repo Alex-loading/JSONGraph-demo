@@ -491,15 +491,49 @@ export default {
           return status? nodeIcons.switchConnect.src : nodeIcons.switchDisconnect.src;
         }); // 兼容旧浏览器
     },
-    handleCompletionVisible(isVisible, lineList) {
-      console.log("handleCompletionVisible", isVisible, lineList);
+    handleCompletionVisible(isVisible, missingFromTo, missingConnectionLines) {
+      console.log("handleCompletionVisible", isVisible, missingFromTo, missingConnectionLines);
       const svg = d3.select(this.$refs.graphContainer).select("svg");
       if (svg.empty()) return;
       const g = svg.select("g");
       
+      // 根据 missingFromTo 和 missingConnectionLines 构建补全的 line 合集
+      const completionLines = [];
+      
+      // 处理 missingFromTo 中的 from_bus 和 to_bus
+      if (missingFromTo && Array.isArray(missingFromTo)) {
+        missingFromTo.forEach(item => {
+          if (item.from_bus && item.to_bus) {
+            completionLines.push({
+              from: item.from_bus,
+              to: item.to_bus,
+              status: true // 假设补全的连接线都是连接状态
+            });
+          }
+        });
+      }
+      
+             // 处理 missingConnectionLines 中的 line_id
+       if (missingConnectionLines && Array.isArray(missingConnectionLines)) {
+         missingConnectionLines.forEach(item => {
+           if (item.line_id) {
+             // 根据 line_id 在 edges 中查找对应的边，获取 sourceId 和 targetId
+             const matchingEdge = this.data.edges.find(edge => edge.id === item.line_id);
+             if (matchingEdge) {
+               completionLines.push({
+                 id: item.line_id,
+                 from: matchingEdge.sourceId,
+                 to: matchingEdge.targetId,
+                 status: true // 假设补全的连接线都是连接状态
+               });
+             }
+           }
+         });
+       }
+      
       // 创建 from-to 到 status 的映射
       const lineStatusMap = {};
-      lineList.forEach(item => {
+      completionLines.forEach(item => {
         // 创建双向映射，因为边的方向可能是 sourceId->targetId 或 targetId->sourceId
         const key1 = `${item.from}-${item.to}`;
         const key2 = `${item.to}-${item.from}`;

@@ -309,7 +309,9 @@ const topoBaseInfo = ref({
   transformerCount: 0,
 });
 const topoCompletionData = ref({
-  lineList: [],
+  // lineList: [],
+  missingFromTo: [],
+  missingConnectionLines: [],
   completionVisible: false,
   lineCount: 0,
   completionTime: "",
@@ -344,9 +346,11 @@ const getDetail = () => {
   getTopologyDetail(props.graphId).then((topoRes) => {
     let base = topoRes.data.data.base
     if (topoRes.data.data.line){
-      topoCompletionData.value.lineList = topoRes.data.data.line.lineList;
-      topoCompletionData.value.lineCount = topoRes.data.data.line.lineCount;
-      topoCompletionData.value.completionTime = topoRes.data.data.line.updateTime;
+      // topoCompletionData.value.lineList = topoRes.data.data.line.lineList;
+      topoCompletionData.missingFromTo = topoRes.data.data.line.missing_from_to
+      topoCompletionData.missingConnectionLines = topoRes.data.data.line.missing_connection_lines
+      topoCompletionData.value.lineCount = topoRes.data.data.line.total_errors;
+      topoCompletionData.value.completionTime = topoRes.data.data.line.analysis_time;
       base.lineCount = topoRes.data.data.line.lineCount;
     }
     if (topoRes.data.data.switch){
@@ -407,8 +411,8 @@ const handleIdentificationVisible = (checked) => {
 // 拓扑补全可视（图源变更）
 const handleCompletionVisible = (checked) => {
   // debugger
-  console.log(checked, topoCompletionData.value.lineList);
-  emit("handleCompletionVisible", checked, topoCompletionData.value.lineList);
+  console.log(checked, topoCompletionData.missingFromTo, topoCompletionData.missingConnectionLines);
+  emit("handleCompletionVisible", checked, topoCompletionData.missingFromTo, topoCompletionData.missingConnectionLines);
 };
 </script>
 <style scoped>
