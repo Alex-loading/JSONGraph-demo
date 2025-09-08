@@ -524,11 +524,11 @@ export default {
       // 创建id到status的映射
       const idStatusMap = {};
       identificationNode.forEach(item => {
-        idStatusMap[item.id] = item.status;
+        idStatusMap[item.switch_id] = item.current_status;
       });
       
       // 获取所有需要更新的节点id
-      const nodeIds = identificationNode.map(item => item.id);
+      const nodeIds = identificationNode.map(item => item.switch_id);
       
       g.selectAll("image")
         .filter(d => nodeIds.includes(d.id))
