@@ -414,7 +414,7 @@ const getDetail = () => {
       topoCompletionData.missingConnectionLines = topoRes.data.data.line.missing_connection_lines
       topoCompletionData.value.lineCount = topoRes.data.data.line.total_errors;
       topoCompletionData.value.completionTime = topoRes.data.data.line.analysis_time;
-      base.lineCount = topoRes.data.data.line.lineCount;
+      base.lineCount = topoRes.data.data.line.total_errors;
     }
     if (topoRes.data.data.switch){
       topoIdentificationData.value.switchList = topoRes.data.data.switch.switchList;
