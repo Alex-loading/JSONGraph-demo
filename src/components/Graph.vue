@@ -453,11 +453,65 @@ export default {
         .attr("href", d => isVisible ? nodeIcons[iconType].src : nodeIcons[d.type].src)
         .attr("xlink:href", d => isVisible ? nodeIcons[iconType].src : nodeIcons[d.type].src); // 兼容旧浏览器
     },
+    handleNewACLVisibility(isVisible, lineSet) {
+      const svg = d3.select(this.$refs.graphContainer).select("svg");
+      if (svg.empty()) return;
+      const g = svg.select("g");
+
+      const idSet = new Set(Array.isArray(lineSet) ? lineSet : []);
+      const aclEdges = this.data.edges.filter(
+        (edge) => edge.type === "ACL" && idSet.has(edge.id)
+      );
+
+      const iconInfo = nodeIcons.NewPosition || nodeIcons.type1;
+
+      if (!isVisible) {
+        // 仅移除匹配到的 ACL 中点图例，避免误删其它标记
+        g
+          .selectAll("image.acl-newposition")
+          .filter((d) => idSet.has(d.id))
+          .remove();
+        return;
+      }
+
+      // 通过数据绑定在连线中点绘制/更新图例
+      const markers = g
+        .selectAll("image.acl-newposition")
+        .data(aclEdges, (d) => d.id);
+
+      // 退出：删除不再需要的图例
+      markers.exit().remove();
+
+      // 进入：为新数据添加图例
+      markers
+        .enter()
+        .append("image")
+        .attr("class", "acl-newposition")
+        .attr("width", iconInfo.width)
+        .attr("height", iconInfo.height)
+        .attr("xlink:href", iconInfo.src)
+        .attr("href", iconInfo.src)
+        .attr("pointer-events", "none")
+        .merge(markers)
+        .attr("x", (d) => {
+          const sourceNode = this.data.nodes.find((n) => n.id === d.sourceId);
+          const targetNode = this.data.nodes.find((n) => n.id === d.targetId);
+          const mx = (sourceNode.x + targetNode.x) / 2;
+          return mx - iconInfo.width / 2;
+        })
+        .attr("y", (d) => {
+          const sourceNode = this.data.nodes.find((n) => n.id === d.sourceId);
+          const targetNode = this.data.nodes.find((n) => n.id === d.targetId);
+          const my = (sourceNode.y + targetNode.y) / 2;
+          return my - iconInfo.height / 2;
+        });
+    },
     handleMasterNodeVisible(isVisible, masterNode) {
       this.handleNodeVisibility(isVisible, masterNode, 'MasterPosition');
     },
     handleNewNodeVisible(isVisible, newNode) {
       this.handleNodeVisibility(isVisible, newNode, 'NewPosition');
+      this.handleNewACLVisibility(isVisible, newNode);
     },
     handleExistNodeVisible(isVisible, existNode) {
       this.handleNodeVisibility(isVisible, existNode, 'ExistPosition');
