@@ -300,6 +300,9 @@ const newNodeRes = ref({
   addIsVisible: false,
   newNodeTime: "",
 });
+const existNodeRes = ref({
+  existNode: []
+});
 
 // 拓扑补全
 const topoBaseInfo = ref({
@@ -387,17 +390,21 @@ onUnmounted(() => {
 });
 const getDetail = () => {
   getDeployDetail(props.graphId).then((res) => {
-    topoAnalysisRes.value.total = res.data.data.total;
-    topoAnalysisRes.value.observeCount = res.data.data.observeCount;
-    topoAnalysisRes.value.observability = res.data.data.observability;
-    topoAnalysisRes.value.summary = res.data.data.summary;
-    topoAnalysisRes.value.updateTime = res.data.data.updateTime;
-    masterNodeRes.value.masterNode = res.data.data.masterNode;
-    masterNodeRes.value.masterNodeTime = res.data.data.masterNodeTime;
-    newNodeRes.value.newNode = res.data.data.newNode;
-    newNodeRes.value.newNodeTime = res.data.data.newNodeTime;
-    newNodeRes.value.amplitudePercent = res.data.data.amplitudePercent;
-    newNodeRes.value.phaseAnglePercent = res.data.data.phaseAnglePercent;
+    if(res.data.data){
+      topoAnalysisRes.value.total = res.data.data.total;
+      topoAnalysisRes.value.observeCount = res.data.data.observeCount;
+      topoAnalysisRes.value.observability = res.data.data.observability;
+      topoAnalysisRes.value.summary = res.data.data.summary;
+      topoAnalysisRes.value.updateTime = res.data.data.updateTime;
+      masterNodeRes.value.masterNode = res.data.data.masterNode;
+      masterNodeRes.value.masterNodeTime = res.data.data.masterNodeTime;
+      newNodeRes.value.newNode = res.data.data.newNode;
+      newNodeRes.value.newNodeTime = res.data.data.newNodeTime;
+      newNodeRes.value.amplitudePercent = res.data.data.amplitudePercent;
+      newNodeRes.value.phaseAnglePercent = res.data.data.phaseAnglePercent;
+      existNodeRes.value.existNode = res.data.data.existNode;
+      handleExistNodeVisible()
+    }
   });
   getTopologyDetail(props.graphId).then((topoRes) => {
     let base = topoRes.data.data.base
@@ -432,6 +439,10 @@ const handleCalculation = () => {
     newNodeRes.value.phaseAnglePercent = res.data.data.node.phaseAnglePercent;
     startPollingDeployDetail();
   });
+};
+const handleExistNodeVisible = () => {
+  console.log(true, existNodeRes.value.existNode);
+  emit("handleExistNodeVisible", true, existNodeRes.value.existNode);
 };
 const handleMasterNodeVisible = (checked) => {
   console.log(checked, masterNodeRes.value.masterNode);

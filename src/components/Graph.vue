@@ -18,6 +18,7 @@
       @handleNewNodeVisible="handleNewNodeVisible"
       @handleIdentificationVisible="handleIdentificationVisible"
       @handleCompletionVisible="handleCompletionVisible"
+      @handleExistNodeVisible="handleExistNodeVisible"
     />
   </div>
 </template>
@@ -457,6 +458,9 @@ export default {
     },
     handleNewNodeVisible(isVisible, newNode) {
       this.handleNodeVisibility(isVisible, newNode, 'NewPosition');
+    },
+    handleExistNodeVisible(isVisible, existNode) {
+      this.handleNodeVisibility(isVisible, existNode, 'ExistPosition');
     },
     handleIdentificationVisible(isVisible, identificationNode) {
       const svg = d3.select(this.$refs.graphContainer).select("svg");
