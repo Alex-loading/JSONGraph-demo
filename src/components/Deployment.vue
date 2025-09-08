@@ -173,7 +173,7 @@
 import { ref, computed, watch } from "vue";
 import { getDeployDetail, postDeployCalc, getTopologyDetail, postIdentifyCalc, postCompleteCalc } from "@/api/graph.ts";
 import InfoRow from "./InfoRow.vue";
-import { onMounted, onUpdated } from "vue";
+import { onMounted, onUpdated, onUnmounted } from "vue";
 import ExistPosition from "../components/icons/ExistPosition.svg?url";
 import MasterPosition from "../components/icons/MasterPosition.svg?url";
 import NewPosition from "../components/icons/NewPosition.svg?url";
@@ -329,6 +329,62 @@ onMounted(() => {
 onUpdated(() => {
   getDetail();
 });
+const pollingTimer = ref(null);
+const startPollingDeployDetail = () => {
+  if (pollingTimer.value) {
+    clearInterval(pollingTimer.value);
+    pollingTimer.value = null;
+  }
+  const hide = message.loading("正在计算中…", 0);
+  const startTime = Date.now();
+  const maxDurationMs = 5 * 60 * 1000;
+  
+  // 记录开始轮询时的 updateTime
+  let initialUpdateTime = topoAnalysisRes.value.updateTime;
+  
+  pollingTimer.value = setInterval(() => {
+    getDeployDetail(props.graphId)
+      .then((res) => {
+        const data = res.data.data;
+        // 同步最新数据
+        topoAnalysisRes.value.total = data.total;
+        topoAnalysisRes.value.observeCount = data.observeCount;
+        topoAnalysisRes.value.observability = data.observability;
+        topoAnalysisRes.value.summary = data.summary;
+        topoAnalysisRes.value.updateTime = data.updateTime;
+        masterNodeRes.value.masterNode = data.masterNode;
+        masterNodeRes.value.masterNodeTime = data.masterNodeTime;
+        newNodeRes.value.newNode = data.newNode;
+        newNodeRes.value.newNodeTime = data.newNodeTime;
+        newNodeRes.value.amplitudePercent = data.amplitudePercent;
+        newNodeRes.value.phaseAnglePercent = data.phaseAnglePercent;
+
+        // 根据 updateTime 是否变化来判断计算是否完成
+        if (data.updateTime && data.updateTime !== initialUpdateTime) {
+          hide();
+          clearInterval(pollingTimer.value);
+          pollingTimer.value = null;
+          message.success("量测优化计算完成");
+        }
+      })
+      .catch(() => {
+        // 忽略一次错误，继续轮询
+      });
+
+    if (Date.now() - startTime > maxDurationMs) {
+      hide();
+      clearInterval(pollingTimer.value);
+      pollingTimer.value = null;
+      message.warning("计算超时，请稍后重试或刷新页面");
+    }
+  }, 2000);
+};
+onUnmounted(() => {
+  if (pollingTimer.value) {
+    clearInterval(pollingTimer.value);
+    pollingTimer.value = null;
+  }
+});
 const getDetail = () => {
   getDeployDetail(props.graphId).then((res) => {
     topoAnalysisRes.value.total = res.data.data.total;
@@ -374,6 +430,7 @@ const handleCalculation = () => {
     newNodeRes.value.newNodeTime = res.data.data.node.newNodeTime;
     newNodeRes.value.amplitudePercent = res.data.data.node.amplitudePercent;
     newNodeRes.value.phaseAnglePercent = res.data.data.node.phaseAnglePercent;
+    startPollingDeployDetail();
   });
 };
 const handleMasterNodeVisible = (checked) => {
