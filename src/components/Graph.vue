@@ -10,18 +10,8 @@
 
 <script>
 import * as d3 from "d3";
-import type1Icon from "../components/icons/type1.svg";
-import ACLineSegment from "../components/icons/ACLineSegment.svg";
-import Disconnector from "../components/icons/Disconnector.svg";
-import Load from "../components/icons/Load.svg";
-import Switch from "../components/icons/Switch.svg";
-import ConnectivityNode from "../components/icons/ConnectivityNode.svg";
-import Breaker from "../components/icons/Breaker.svg";
-import BusbarSection from "../components/icons/BusbarSection.svg";
-import PowerTransformer from "../components/icons/PowerTransformer.svg";
-import TieSwitch from "../components/icons/TieSwitch.svg";
-import Substation from "../components/icons/Substation.svg"
 import {getGraphData} from "@/api/graph.ts";
+import { nodeIcons, linkStyles } from "@/assets/graphStyle.js";
 
 export default {
   name: "RelationGraph",
@@ -30,68 +20,6 @@ export default {
       data: {
         nodes: [],
         edges: [],
-      },
-      nodeIcons: {
-        type1: {
-          src: type1Icon,
-          width: 40,
-          height: 40,
-          isCircle: false,
-        },
-        Substation: {
-          src: Substation,
-          width: 40,
-          height: 40,
-          isCircle: false,
-        },
-        ACLineSegment: {
-          src: ACLineSegment,
-          width: 20,
-          height: 20,
-          isCircle: true,
-        },
-        Disconnector: {
-          src: Disconnector,
-          width: 20,
-          height: 20,
-          isCircle: true,
-        },
-        Load: { src: Load, width: 20, height: 20, isCircle: true },
-        Switch: { src: Switch, width: 50, height: 20, isCircle: false },
-        ConnectivityNode: {
-          src: ConnectivityNode,
-          width: 20,
-          height: 20,
-          isCircle: true,
-        },
-        Breaker: { src: Breaker, width: 40, height: 20, isCircle: false },
-        BusbarSection: {
-          src: BusbarSection,
-          width: 10,
-          height: 10,
-          isCircle: true,
-        },
-        PowerTransformer: {
-          src: PowerTransformer,
-          width: 40,
-          height: 20,
-          isCircle: false,
-        },
-        TieSwitch: {
-          src: TieSwitch,
-          width: 50,
-          height: 20,
-          isCircle: false,
-        }
-      },
-      linkStyles: {
-        solid: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "0" },
-        dashed: { stroke: "#000000", strokeWidth: 2, strokeDasharray: "2,4" },
-        ConnectivityEdge: {
-          stroke: "#000000",
-          strokeWidth: 2,
-          strokeDasharray: "0",
-        },
       },
       searchCount: 0,
       searchId: "",
@@ -102,8 +30,11 @@ export default {
       this.searchCount += 1;
       this.createGraph();
     },
-    createGraph() {
-      getGraphData(this.searchId).then((res) => {
+createGraph() {
+      getGraphData(
+        this.searchId,
+        dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")
+      ).then((res) => {
         console.log(res);
         this.data = res.data.data;
         console.log("data", this.data);
@@ -150,32 +81,40 @@ export default {
           .enter()
           .append("foreignObject")
           .attr("x", (d) => {
-            if (d.type != "Switch"){
+            if (d.type != "Switch") {
               return d.x - 30;
             } else {
               const theta = (d.direction * Math.PI) / 180;
               const cosTheta = Math.cos(theta);
-              const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
-              return d.x - type.width * cosTheta / 2 - 30;
+              const type = nodeIcons[d.type]
+                ? nodeIcons[d.type]
+                : nodeIcons.type1;
+              return d.x - (type.width * cosTheta) / 2 - 30;
             }
           }) // 偏移，使文本居中
-          .attr(
-            "y",
-            (d) => {
-              const type = this.nodeIcons[d.type] ? this.nodeIcons[d.type] : this.nodeIcons.type1;
-              if (d.type == "Switch"){
-                const theta = d.direction % 360;
-                let y = d.y + type.height * Math.abs(Math.cos((theta * Math.PI) / 180)) / 2 + 6;
-                if (theta > 180){
-                  y += type.width * Math.abs(Math.sin((theta - 180 * Math.PI) / 180));
-                }
-                return y;
-              } else if (d.direction % 180 != 0 && d.direction % 90 == 0){
-                return d.y + type.width / 2 + 6;
-              } else {
-                return d.y + type.height / 2 + 6;
+          .attr("y", (d) => {
+            const type = nodeIcons[d.type]
+              ? nodeIcons[d.type]
+              : nodeIcons.type1;
+            if (d.type == "Switch") {
+              const theta = d.direction % 360;
+              let y =
+                d.y +
+                (type.height * Math.abs(Math.cos((theta * Math.PI) / 180))) /
+                  2 +
+                6;
+              if (theta > 180) {
+                y +=
+                  type.width *
+                  Math.abs(Math.sin((theta - 180 * Math.PI) / 180));
               }
-            })
+              return y;
+            } else if (d.direction % 180 != 0 && d.direction % 90 == 0) {
+              return d.y + type.width / 2 + 6;
+            } else {
+              return d.y + type.height / 2 + 6;
+            }
+          })
           .attr("width", 60)
           .attr("height", 120)
           .append("xhtml:div")
@@ -208,19 +147,19 @@ export default {
             (d) => this.data.nodes.find((node) => node.id == d.targetId).y
           )
           .attr("stroke", (d) =>
-            this.linkStyles[d.style]
-              ? this.linkStyles[d.style].stroke
-              : this.linkStyles.solid.stroke
+            linkStyles[d.style]
+              ? linkStyles[d.style].stroke
+              : linkStyles.solid.stroke
           )
           .attr("stroke-width", (d) =>
-            this.linkStyles[d.style]
-              ? this.linkStyles[d.style].strokeWidth
-              : this.linkStyles.solid.strokeWidth
+            linkStyles[d.style]
+              ? linkStyles[d.style].strokeWidth
+              : linkStyles.solid.strokeWidth
           )
           .attr("stroke-dasharray", (d) =>
-            this.linkStyles[d.style]
-              ? this.linkStyles[d.style].strokeDasharray
-              : this.linkStyles.solid.strokeDasharray
+            linkStyles[d.style]
+              ? linkStyles[d.style].strokeDasharray
+              : linkStyles.solid.strokeDasharray
           )
           .on("mouseover", (event, d) => {
             console.log("line: mouseover");
@@ -243,16 +182,23 @@ export default {
           })
           .on("mouseout", () => {
             tooltip.style("visibility", "hidden");
-          });
+          })
+          .text(function(d) { return d.id; });
 
         // 绘制连线电流（不去重 只考虑起始节点）
         g.selectAll("circle.start")
-          .data(this.data.edges.filter((d) => {
-            const sourceNode = this.data.nodes.find((node) => node.id === d.sourceId);
-            const targetNode = this.data.nodes.find((node) => node.id === d.targetId);
-            // 仅保留非 "Switch" 类型的边
-            return sourceNode.type !== "Switch";
-          }))
+          .data(
+            this.data.edges.filter((d) => {
+              const sourceNode = this.data.nodes.find(
+                (node) => node.id === d.sourceId
+              );
+              const targetNode = this.data.nodes.find(
+                (node) => node.id === d.targetId
+              );
+              // 仅保留非 "Switch" 类型的边
+              return sourceNode.type !== "Switch";
+            })
+          )
           .enter()
           .append("circle")
           .attr("class", "start")
@@ -284,36 +230,32 @@ export default {
           .enter()
           .append("image")
           .attr("xlink:href", (d) =>
-            this.nodeIcons[d.type]
-              ? this.nodeIcons[d.type].src
-              : this.nodeIcons.type1.src
+            nodeIcons[d.type] ? nodeIcons[d.type].src : nodeIcons.type1.src
           )
           .attr("width", (d) =>
-            this.nodeIcons[d.type]
-              ? this.nodeIcons[d.type].width
-              : this.nodeIcons.type1.width
+            nodeIcons[d.type] ? nodeIcons[d.type].width : nodeIcons.type1.width
           )
           .attr("height", (d) =>
-            this.nodeIcons[d.type]
-              ? this.nodeIcons[d.type].height
-              : this.nodeIcons.type1.height
+            nodeIcons[d.type]
+              ? nodeIcons[d.type].height
+              : nodeIcons.type1.height
           )
           .attr(
             "x",
             (d) =>
               d.x -
-              (this.nodeIcons[d.type]
-                ? this.nodeIcons[d.type].width
-                : this.nodeIcons.type1.width) /
+              (nodeIcons[d.type]
+                ? nodeIcons[d.type].width
+                : nodeIcons.type1.width) /
                 (d.type == "Switch" ? 1 : 2)
           )
           .attr(
             "y",
             (d) =>
               d.y -
-              (this.nodeIcons[d.type]
-                ? this.nodeIcons[d.type].height
-                : this.nodeIcons.type1.height) /
+              (nodeIcons[d.type]
+                ? nodeIcons[d.type].height
+                : nodeIcons.type1.height) /
                 2
           )
           .attr("transform", (d) =>
@@ -338,12 +280,6 @@ export default {
             // 当鼠标离开节点时，隐藏 tooltip
             tooltip.style("visibility", "hidden");
           });
-        // .on("click", function () {
-        //   // 图标点击事件（用于后续节点开闭的svg切换）
-        //   console.log("click");
-        //   console.log(this);
-        //   d3.select(this).attr("xlink:href", type1Icon); // 切换图标。type1Icon对应需要切换为的图标，可根据需求修改
-        // });
       });
     },
     getPointOnLine(sourceNode, targetNode, r0) {
@@ -352,9 +288,9 @@ export default {
       const x2 = targetNode.x;
       const y2 = targetNode.y;
       const sourceDircetion = sourceNode.direction;
-      const info = this.nodeIcons[sourceNode.type]
-        ? this.nodeIcons[sourceNode.type]
-        : this.nodeIcons.type1;
+      const info = nodeIcons[sourceNode.type]
+        ? nodeIcons[sourceNode.type]
+        : nodeIcons.type1;
       const L = info.width;
       const W = info.height;
 
